@@ -1,0 +1,49 @@
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: #0A0A0A;
+  color: white;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* Enhanced Background Styles */
+.bg-custom {
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+
+.bg-overlay {
+  background: linear-gradient(
+    180deg,
+    rgba(10, 10, 10, 0.8) 0%,
+    rgba(10, 10, 10, 0.6) 50%,
+    rgba(10, 10, 10, 0.9) 100%
+  );
+}
+
+/* Animated Background Gradient */
+@keyframes gradientShift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.animated-gradient-bg {
+  background: linear-gradient(
+    -45deg,
+    #0A0A0A,
+    #111111,
+    #1a0a0a,
+    #0a0a0a
+  );
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+}
