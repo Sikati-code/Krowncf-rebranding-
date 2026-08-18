@@ -1,5 +1,6 @@
 import { motion, useInView, AnimatePresence } from 'framer-motion';
 import { useRef, useState } from 'react';
+import { Link } from 'react-router';
 import {
   Grid3X3,
   PartyPopper,
@@ -24,6 +25,7 @@ const categories = [
     icon: PartyPopper,
     gradient: 'from-orange-500/20 to-red-500/20',
     iconColor: 'text-orange-400',
+    slug: 'workers-day',
   },
   {
     id: 2,
@@ -34,6 +36,7 @@ const categories = [
     icon: PartyIcon,
     gradient: 'from-pink-500/20 to-rose-500/20',
     iconColor: 'text-pink-400',
+    slug: 'womens-day',
   },
   {
     id: 3,
@@ -44,6 +47,7 @@ const categories = [
     icon: Cake,
     gradient: 'from-rose-500/20 to-pink-600/20',
     iconColor: 'text-rose-400',
+    slug: 'wedding-ivs',
   },
   {
     id: 4,
@@ -54,6 +58,7 @@ const categories = [
     icon: Shapes,
     gradient: 'from-teal-500/20 to-cyan-500/20',
     iconColor: 'text-teal-400',
+    slug: 'vector-illustrations',
   },
   {
     id: 5,
@@ -64,6 +69,7 @@ const categories = [
     icon: PartyIcon,
     gradient: 'from-red-500/20 to-pink-500/20',
     iconColor: 'text-red-400',
+    slug: 'valentines-day',
   },
   {
     id: 6,
@@ -74,6 +80,7 @@ const categories = [
     icon: Type,
     gradient: 'from-blue-500/20 to-indigo-500/20',
     iconColor: 'text-blue-400',
+    slug: 'teachers-day',
   },
   {
     id: 7,
@@ -84,6 +91,7 @@ const categories = [
     icon: Image,
     gradient: 'from-purple-500/20 to-violet-500/20',
     iconColor: 'text-purple-400',
+    slug: 'posters',
   },
   {
     id: 8,
@@ -94,6 +102,7 @@ const categories = [
     icon: Image,
     gradient: 'from-green-500/20 to-emerald-500/20',
     iconColor: 'text-green-400',
+    slug: 'png',
   },
   {
     id: 9,
@@ -104,6 +113,7 @@ const categories = [
     icon: PartyIcon,
     gradient: 'from-yellow-500/20 to-amber-500/20',
     iconColor: 'text-yellow-400',
+    slug: 'party-flyers',
   },
   {
     id: 10,
@@ -114,6 +124,7 @@ const categories = [
     icon: MapPin,
     gradient: 'from-green-600/20 to-green-400/20',
     iconColor: 'text-green-500',
+    slug: 'nigeria',
   },
   {
     id: 11,
@@ -124,6 +135,7 @@ const categories = [
     icon: Church,
     gradient: 'from-emerald-500/20 to-teal-500/20',
     iconColor: 'text-emerald-400',
+    slug: 'muslim',
   },
   {
     id: 12,
@@ -134,6 +146,7 @@ const categories = [
     icon: PartyIcon,
     gradient: 'from-violet-500/20 to-purple-500/20',
     iconColor: 'text-violet-400',
+    slug: 'music-covers',
   },
   {
     id: 13,
@@ -144,6 +157,7 @@ const categories = [
     icon: PartyPopper,
     gradient: 'from-amber-500/20 to-orange-500/20',
     iconColor: 'text-amber-400',
+    slug: 'happy-new-year',
   },
   {
     id: 14,
@@ -154,6 +168,7 @@ const categories = [
     icon: PartyIcon,
     gradient: 'from-orange-600/20 to-red-600/20',
     iconColor: 'text-orange-500',
+    slug: 'halloween',
   },
   {
     id: 15,
@@ -164,6 +179,7 @@ const categories = [
     icon: Type,
     gradient: 'from-purple-500/20 to-violet-500/20',
     iconColor: 'text-purple-400',
+    slug: 'fonts',
   },
   {
     id: 16,
@@ -174,6 +190,7 @@ const categories = [
     icon: PartyPopper,
     gradient: 'from-orange-500/20 to-red-500/20',
     iconColor: 'text-orange-400',
+    slug: 'festivities',
   },
   {
     id: 17,
@@ -184,6 +201,7 @@ const categories = [
     icon: Cake,
     gradient: 'from-blue-600/20 to-indigo-600/20',
     iconColor: 'text-blue-500',
+    slug: 'fathers-day',
   },
   {
     id: 18,
@@ -194,6 +212,7 @@ const categories = [
     icon: PartyIcon,
     gradient: 'from-pink-400/20 to-purple-400/20',
     iconColor: 'text-pink-400',
+    slug: 'easter-design',
   },
   {
     id: 19,
@@ -204,6 +223,7 @@ const categories = [
     icon: Church,
     gradient: 'from-blue-500/20 to-indigo-500/20',
     iconColor: 'text-blue-400',
+    slug: 'church-flyers',
   },
   {
     id: 20,
@@ -214,6 +234,7 @@ const categories = [
     icon: PartyPopper,
     gradient: 'from-red-500/20 to-green-500/20',
     iconColor: 'text-red-400',
+    slug: 'christmas',
   },
   {
     id: 21,
@@ -224,6 +245,7 @@ const categories = [
     icon: MapPin,
     gradient: 'from-green-500/20 to-yellow-500/20',
     iconColor: 'text-green-400',
+    slug: 'cameroon',
   },
   {
     id: 22,
@@ -234,6 +256,7 @@ const categories = [
     icon: Cake,
     gradient: 'from-pink-500/20 to-rose-500/20',
     iconColor: 'text-pink-400',
+    slug: 'birthday-designs',
   },
   {
     id: 23,
@@ -244,6 +267,7 @@ const categories = [
     icon: Image,
     gradient: 'from-yellow-500/20 to-orange-500/20',
     iconColor: 'text-yellow-400',
+    slug: 'african-celebrities',
   },
   {
     id: 24,
@@ -254,6 +278,7 @@ const categories = [
     icon: Shapes,
     gradient: 'from-cyan-500/20 to-blue-500/20',
     iconColor: 'text-cyan-400',
+    slug: '3d-pngs',
   },
 ];
 
@@ -311,9 +336,8 @@ export default function Categories() {
           {/* Categories Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
             {categories.slice(0, 8).map((category, index) => (
-              <motion.a
-                key={category.id}
-                href={`#${category.name.toLowerCase().replace(/\s+/g, '-')}`}
+              <Link key={category.id} to={`/categories/${category.slug}`}>
+                <motion.div
                 initial={{ opacity: 0, y: 40, scale: 0.9 }}
                 whileInView={{ opacity: 1, y: 0, scale: 1 }}
                 viewport={{ once: true, margin: '-50px' }}
@@ -372,7 +396,8 @@ export default function Categories() {
                     </motion.span>
                   </div>
                 </div>
-              </motion.a>
+                </motion.div>
+              </Link>
             ))}
           </div>
 
@@ -440,10 +465,8 @@ export default function Categories() {
                 <div className="p-6 overflow-y-auto max-h-[calc(90vh-100px)]">
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {categories.map((category, index) => (
-                      <motion.a
-                        key={category.id}
-                        href={`#${category.name.toLowerCase().replace(/\s+/g, '-')}`}
-                        onClick={() => setIsModalOpen(false)}
+                      <Link key={category.id} to={`/categories/${category.slug}`} onClick={() => setIsModalOpen(false)}>
+                        <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3, delay: index * 0.02 }}
@@ -479,7 +502,8 @@ export default function Categories() {
                             </span>
                           </div>
                         </div>
-                      </motion.a>
+                        </motion.div>
+                      </Link>
                     ))}
                   </div>
                 </div>

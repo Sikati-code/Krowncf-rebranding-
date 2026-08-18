@@ -207,18 +207,18 @@ export default function FloatingCTA() {
             {/* Contact Info */}
             <div className="mt-6 pt-4 border-t border-white/10">
               <p className="text-xs text-white/50 mb-3 text-center">
-                Or reach us directly through call or email
+                For branding inquiries, email us at krownassets@gmail.com
               </p>
               <div className="flex gap-2">
                 <a
-                  href="tel:+2348000000000"
+                  href="tel:+2348136804699"
                   className="flex-1 flex items-center justify-center gap-2 py-2 text-xs text-white/60 hover:text-white hover:bg-white/5 rounded-lg transition-all"
                 >
                   <Phone className="w-3.5 h-3.5" />
                   Call
                 </a>
                 <a
-                  href="mailto:hello@krown.com"
+                  href="mailto:krownassets@gmail.com"
                   className="flex-1 flex items-center justify-center gap-2 py-2 text-xs text-white/60 hover:text-white hover:bg-white/5 rounded-lg transition-all"
                 >
                   <Mail className="w-3.5 h-3.5" />

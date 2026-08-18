@@ -276,11 +276,27 @@ export default function Footer() {
                 </motion.li>
                 <li className="flex items-center gap-3">
                   <Phone className="w-4 h-4 text-krown-red flex-shrink-0" />
-                  <span className="text-sm text-white/40">+234 XXX XXX XXXX</span>
+                  <a href="tel:+2348136804699" className="text-sm text-white/40 hover:text-krown-red transition-colors">
+                    🇳🇬 +234 813 680 4699 (Nigeria)
+                  </a>
+                </li>
+                <li className="flex items-center gap-3">
+                  <Phone className="w-4 h-4 text-krown-red flex-shrink-0" />
+                  <a href="tel:+237680200704" className="text-sm text-white/40 hover:text-krown-red transition-colors">
+                    🇨🇲 +237 680 20 07 04 (Cameroon)
+                  </a>
                 </li>
                 <li className="flex items-center gap-3">
                   <Mail className="w-4 h-4 text-krown-red flex-shrink-0" />
-                  <span className="text-sm text-white/40">info@krowncf.com</span>
+                  <a href="mailto:Info@krowncf.com" className="text-sm text-white/40 hover:text-krown-red transition-colors">
+                    Info@krowncf.com
+                  </a>
+                </li>
+                <li className="flex items-center gap-3">
+                  <Mail className="w-4 h-4 text-krown-red flex-shrink-0" />
+                  <a href="mailto:krownassets@gmail.com" className="text-sm text-white/40 hover:text-krown-red transition-colors">
+                    krownassets@gmail.com
+                  </a>
                 </li>
               </ul>
             </motion.div>

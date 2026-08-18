@@ -6,17 +6,25 @@ import { useLanguage } from '../contexts/LanguageContext';
 const contactMethods = [
   {
     icon: Mail,
-    label: 'Email',
-    value: 'hello@krown.com',
-    link: 'mailto:hello@krown.com',
+    label: 'Email (General)',
+    value: 'Info@krowncf.com',
+    link: 'mailto:Info@krowncf.com',
+    color: 'from-blue-500 to-blue-600',
+    hoverColor: 'hover:border-blue-500/50'
+  },
+  {
+    icon: Mail,
+    label: 'Email (Branding)',
+    value: 'krownassets@gmail.com',
+    link: 'mailto:krownassets@gmail.com',
     color: 'from-blue-500 to-blue-600',
     hoverColor: 'hover:border-blue-500/50'
   },
   {
     icon: MessageCircle,
     label: 'WhatsApp',
-    value: '+234 800 000 0000',
-    link: 'https://wa.me/2348000000000',
+    value: '+234 813 680 4699',
+    link: 'https://wa.me/2348136804699',
     color: 'from-green-500 to-green-600',
     hoverColor: 'hover:border-green-500/50'
   },
@@ -38,9 +46,17 @@ const contactMethods = [
   },
   {
     icon: Phone,
-    label: 'Phone',
-    value: '+234 800 000 0000',
-    link: 'tel:+2348000000000',
+    label: 'Phone (Nigeria)',
+    value: '+234 813 680 4699',
+    link: 'tel:+2348136804699',
+    color: 'from-krown-red to-krown-red-dark',
+    hoverColor: 'hover:border-krown-red/50'
+  },
+  {
+    icon: Phone,
+    label: 'Phone (Cameroon)',
+    value: '+237 680 20 07 04',
+    link: 'tel:+237680200704',
     color: 'from-krown-red to-krown-red-dark',
     hoverColor: 'hover:border-krown-red/50'
   }
@@ -244,7 +260,7 @@ export default function Contact() {
               animate={isInView ? { opacity: 1, x: 0 } : {}}
               transition={{ duration: 0.8, delay: 0.4 }}
             >
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} action="mailto:krownassets@gmail.com" method="post" encType="text/plain" className="space-y-6">
                 {/* Success Message */}
                 <AnimatePresence>
                   {submitSuccess && (

@@ -5,7 +5,10 @@ import {
   Search,
   ShoppingCart,
   Menu,
-  X
+  X,
+  Phone,
+  Mail,
+  ChevronDown
 } from 'lucide-react';
 import LoginModal from './LoginModal';
 import Cart from './Cart';
@@ -29,6 +32,7 @@ export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isContactDropdownOpen, setIsContactDropdownOpen] = useState(false);
   const { cartItems, cartCount, removeFromCart, updateQuantity } = useCart();
 
   useEffect(() => {
@@ -133,6 +137,48 @@ export default function Header() {
               {/* Language Toggle - Desktop */}
               <div className="hidden sm:block">
                 <LanguageToggle />
+              </div>
+
+              {/* Contact Dropdown */}
+              <div className="relative hidden lg:block">
+                <motion.button
+                  onClick={() => setIsContactDropdownOpen(!isContactDropdownOpen)}
+                  className="flex items-center gap-1 px-3 py-2 text-sm text-white/70 hover:text-white transition-colors"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Phone className="w-4 h-4" />
+                  <ChevronDown className={`w-3 h-3 transition-transform ${isContactDropdownOpen ? 'rotate-180' : ''}`} />
+                </motion.button>
+                <AnimatePresence>
+                  {isContactDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute right-0 top-full mt-2 w-64 glass-card rounded-xl border border-white/10 overflow-hidden z-50"
+                    >
+                      <div className="p-4 space-y-3">
+                        <a href="tel:+2348136804699" className="flex items-center gap-3 text-sm text-white/60 hover:text-white transition-colors">
+                          <Phone className="w-4 h-4 text-krown-red" />
+                          <span>🇳🇬 +234 813 680 4699</span>
+                        </a>
+                        <a href="tel:+237680200704" className="flex items-center gap-3 text-sm text-white/60 hover:text-white transition-colors">
+                          <Phone className="w-4 h-4 text-krown-red" />
+                          <span>🇨🇲 +237 680 20 07 04</span>
+                        </a>
+                        <a href="mailto:Info@krowncf.com" className="flex items-center gap-3 text-sm text-white/60 hover:text-white transition-colors">
+                          <Mail className="w-4 h-4 text-krown-red" />
+                          <span>Info@krowncf.com</span>
+                        </a>
+                        <a href="mailto:krownassets@gmail.com" className="flex items-center gap-3 text-sm text-white/60 hover:text-white transition-colors">
+                          <Mail className="w-4 h-4 text-krown-red" />
+                          <span>krownassets@gmail.com</span>
+                        </a>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
               {/* Cart */}
