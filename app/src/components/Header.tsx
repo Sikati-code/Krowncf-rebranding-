@@ -52,6 +52,7 @@ export default function Header() {
       }
     } else {
       // Navigate to route
+      // eslint-disable-next-line react-hooks/immutability
       window.location.href = href;
     }
     setIsMobileMenuOpen(false);

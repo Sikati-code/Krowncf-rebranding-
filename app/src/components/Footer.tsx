@@ -54,6 +54,7 @@ export default function Footer() {
       }
     } else {
       // Navigate to route
+      // eslint-disable-next-line react-hooks/immutability
       window.location.href = href;
     }
   };

@@ -9,7 +9,10 @@ export default function CategoryPage() {
   const { slug } = useParams();
   const { language } = useLanguage();
   const category = categories.find(c => c.slug === slug);
-  
+
+  const [filter, setFilter] = useState('all');
+  const [sort, setSort] = useState('newest');
+
   if (!category) {
     return (
       <div className="min-h-screen bg-krown-black flex items-center justify-center">
@@ -21,8 +24,7 @@ export default function CategoryPage() {
     );
   }
   
-  const [filter, setFilter] = useState('all');
-  const [sort, setSort] = useState('newest');
+  
   
   // Filter and sort logic
   const filteredDesigns = category.designs

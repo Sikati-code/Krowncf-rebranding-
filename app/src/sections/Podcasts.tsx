@@ -1,5 +1,12 @@
 import { motion, useInView } from 'framer-motion';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
+
+type Bar = { height: number; duration: number }
+
+const INITIAL_BARS: Bar[] = Array.from({ length: 8 }).map(() => ({
+  height: 8 + Math.random() * 20,
+  duration: 1 + Math.random(),
+}));
 import { Mic, ExternalLink } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -58,6 +65,7 @@ export default function Podcasts() {
   const { t } = useLanguage();
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
+  const [bars] = useState<Bar[]>(() => INITIAL_BARS);
 
   return (
     <section id="podcasts" className="relative py-20 sm:py-28 lg:py-32">
@@ -143,15 +151,15 @@ export default function Podcasts() {
                   </motion.div>
 
                   {/* Floating Sound Waves */}
-                  <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-end gap-1">
-                    {[...Array(8)].map((_, i) => (
+                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-end gap-1">
+                    {bars.map((b: Bar, i: number) => (
                       <motion.div
                         key={i}
                         animate={{
-                          height: [8, 20 + Math.random() * 20, 8],
+                          height: [8, b.height, 8],
                         }}
                         transition={{
-                          duration: 1 + Math.random(),
+                          duration: b.duration,
                           repeat: Infinity,
                           delay: i * 0.1,
                         }}
@@ -159,7 +167,7 @@ export default function Podcasts() {
                         style={{ height: 8 }}
                       />
                     ))}
-                  </div>
+                    </div>
                 </div>
 
                 {/* Podcast Info */}

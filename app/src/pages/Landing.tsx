@@ -1,5 +1,23 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState } from 'react';
+
+type FloatingItem = {
+  x: number;
+  y: number;
+  opacity: number;
+  scale: number;
+  left: string;
+  top: string;
+}
+
+const INITIAL_FLOATING_ITEMS: FloatingItem[] = Array.from({ length: 6 }).map(() => ({
+  x: Math.random() * 100,
+  y: Math.random() * 100,
+  opacity: 0.05,
+  scale: Math.random() * 0.5 + 0.5,
+  left: `${Math.random() * 100}%`,
+  top: `${Math.random() * 100}%`,
+}));
 import { useNavigate } from 'react-router';
 import { Crown, Sparkles } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -90,18 +108,17 @@ const monthlyMessages: Record<number, MonthlyMessage> = {
 export default function Landing() {
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const [currentMonth, setCurrentMonth] = useState(0);
+  const [currentMonth] = useState(() => new Date().getMonth());
   const [isExiting, setIsExiting] = useState(false);
   const [showContent, setShowContent] = useState(false);
+  const [floatingItems] = useState<FloatingItem[]>(() => INITIAL_FLOATING_ITEMS);
 
   useEffect(() => {
-    const month = new Date().getMonth();
-    setCurrentMonth(month);
-    
     // Check if user has already seen the landing page
     const hasSeenLanding = sessionStorage.getItem('hasSeenLanding');
     if (hasSeenLanding) {
       navigate('/home');
+      return;
     }
 
     // Delay content reveal for dramatic effect
@@ -141,20 +158,15 @@ export default function Landing() {
 
       {/* Floating logo silhouettes in background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(6)].map((_, i) => (
+              {floatingItems.map((it: FloatingItem, i: number) => (
           <motion.div
             key={i}
             className="absolute"
-            initial={{
-              x: Math.random() * 100,
-              y: Math.random() * 100,
-              opacity: 0.05,
-              scale: Math.random() * 0.5 + 0.5
-            }}
+            initial={{ x: it.x, y: it.y, opacity: it.opacity, scale: it.scale }}
             animate={{
               y: [0, -30, 0],
               rotate: [0, 5, -5, 0],
-              opacity: [0.05, 0.1, 0.05]
+              opacity: [it.opacity, 0.1, it.opacity]
             }}
             transition={{
               duration: 8 + i * 2,
@@ -162,10 +174,7 @@ export default function Landing() {
               ease: "easeInOut",
               delay: i * 0.5
             }}
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`
-            }}
+            style={{ left: it.left, top: it.top }}
           >
             <Crown className="w-16 h-16 text-krown-red" />
           </motion.div>

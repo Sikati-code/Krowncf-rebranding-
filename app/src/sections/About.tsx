@@ -90,7 +90,7 @@ function Counter({ value, suffix, label }: { value: number; suffix: string; labe
       let start = 0;
       const end = value;
       const duration = 2000;
-      let startTime = performance.now();
+      const startTime = performance.now();
 
       const animate = (currentTime: number) => {
         const elapsedTime = currentTime - startTime;
@@ -152,7 +152,7 @@ export default function About() {
       timer = requestAnimationFrame(animate);
       return () => cancelAnimationFrame(timer);
     }
-  }, [isInView]);
+  }, [isInView, fullText]);
 
   return (
     <section id="about" className="relative py-20 sm:py-28 lg:py-32 overflow-hidden">
