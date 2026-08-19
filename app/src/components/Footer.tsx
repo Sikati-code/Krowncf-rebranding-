@@ -293,12 +293,6 @@ export default function Footer() {
                     Info@krowncf.com
                   </a>
                 </li>
-                <li className="flex items-center gap-3">
-                  <Mail className="w-4 h-4 text-krown-red flex-shrink-0" />
-                  <a href="mailto:krownassets@gmail.com" className="text-sm text-white/40 hover:text-krown-red transition-colors">
-                    krownassets@gmail.com
-                  </a>
-                </li>
               </ul>
             </motion.div>
           </div>

@@ -9,6 +9,7 @@ interface Song {
   artist: string;
   cover: string;
   color: string;
+  previewUrl?: string;
 }
 
 interface Video {
@@ -25,6 +26,7 @@ const songs: Song[] = [
     artist: 'Krown CF',
     cover: 'from-purple-600/40 to-blue-600/40',
     color: 'purple',
+    previewUrl: '/assets/audio/kinym-preview.mp3',
   },
   {
     id: 2,
@@ -32,6 +34,7 @@ const songs: Song[] = [
     artist: 'Krown CF',
     cover: 'from-krown-red/40 to-red-600/40',
     color: 'red',
+    previewUrl: '/assets/audio/tripping-preview.mp3',
   },
   {
     id: 3,
@@ -39,6 +42,7 @@ const songs: Song[] = [
     artist: 'Reno Snr',
     cover: 'from-green-600/40 to-teal-600/40',
     color: 'green',
+    previewUrl: '/assets/audio/not-your-mate-preview.mp3',
   },
   {
     id: 4,
@@ -46,6 +50,7 @@ const songs: Song[] = [
     artist: 'KCF All Stars',
     cover: 'from-pink-600/40 to-rose-600/40',
     color: 'pink',
+    previewUrl: '/assets/audio/creative-vibes-preview.mp3',
   },
 ];
 
@@ -62,12 +67,6 @@ const videos: Video[] = [
     title: 'Krown CF - Video 1',
     thumbnail: 'https://img.youtube.com/vi/60gZ6lqZOE0/maxresdefault.jpg',
     youtubeUrl: 'https://youtu.be/60gZ6lqZOE0?si=v9jgQWUNZLgPZCoG',
-  },
-  {
-    id: 2,
-    title: 'Krown CF - Video 2',
-    thumbnail: 'https://img.youtube.com/vi/60gZ6lqZOE0/maxresdefault.jpg',
-    youtubeUrl: 'https://youtu.be/60gZ6lqZOE0?si=nG6G8hvXbzYKzNuV',
   },
   {
     id: 3,
@@ -130,6 +129,18 @@ function SongCard({ song, index }: { song: Song; index: number }) {
             {song.title}
           </h3>
           <p className="text-sm text-white/50 mb-4">{song.artist}</p>
+
+          {song.previewUrl && (
+            <audio
+              controls
+              preload="none"
+              className="w-full h-8 mb-4 accent-krown-orange"
+              aria-label={`Preview of ${song.title}`}
+            >
+              <source src={song.previewUrl} type="audio/mpeg" />
+              Your browser does not support audio playback.
+            </audio>
+          )}
 
           {/* Streaming Links */}
           <div className="flex flex-wrap gap-1.5">
