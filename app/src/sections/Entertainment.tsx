@@ -1,5 +1,5 @@
 import { motion, useInView } from 'framer-motion';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { Music, Play, ExternalLink } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -83,6 +83,23 @@ const videos: Video[] = [
 ];
 
 function SongCard({ song, index }: { song: Song; index: number }) {
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  const togglePreview = () => {
+    const audio = audioRef.current;
+    if (!audio || !song.previewUrl) return;
+
+    if (audio.paused) {
+      audio.play()
+        .then(() => setIsPlaying(true))
+        .catch(() => setIsPlaying(false));
+    } else {
+      audio.pause();
+      setIsPlaying(false);
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 40 }}
@@ -107,15 +124,25 @@ function SongCard({ song, index }: { song: Song; index: number }) {
             <Music className="w-16 h-16 text-white/80" />
           </div>
 
-          {/* Play Button Overlay */}
-          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-            <motion.div
+          {/* Audio Preview Button */}
+          <div className="absolute inset-0 bg-black/40 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+            <motion.button
+              type="button"
+              onClick={togglePreview}
+              aria-label={`${isPlaying ? 'Pause' : 'Play'} preview of ${song.title}`}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
               className="w-14 h-14 rounded-full bg-krown-orange flex items-center justify-center cursor-pointer shadow-glow"
             >
-              <Play className="w-6 h-6 text-white ml-1" fill="white" />
-            </motion.div>
+              {isPlaying ? (
+                <span className="flex gap-1" aria-hidden="true">
+                  <span className="w-1.5 h-6 rounded-full bg-white" />
+                  <span className="w-1.5 h-6 rounded-full bg-white" />
+                </span>
+              ) : (
+                <Play className="w-6 h-6 text-white ml-1" fill="white" />
+              )}
+            </motion.button>
           </div>
 
           {/* Floating particles */}
@@ -132,10 +159,11 @@ function SongCard({ song, index }: { song: Song; index: number }) {
 
           {song.previewUrl && (
             <audio
-              controls
+              ref={audioRef}
               preload="none"
-              className="w-full h-8 mb-4 accent-krown-orange"
+              className="hidden"
               aria-label={`Preview of ${song.title}`}
+              onEnded={() => setIsPlaying(false)}
             >
               <source src={song.previewUrl} type="audio/mpeg" />
               Your browser does not support audio playback.
