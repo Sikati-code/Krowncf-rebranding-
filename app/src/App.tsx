@@ -4,6 +4,7 @@ import About from './pages/About'
 import Contact from './pages/Contact'
 import Latest from './pages/Latest'
 import CategoryPage from './pages/CategoryPage'
+import Brands from './pages/Brands'
 
 export default function App() {
   return (
@@ -13,6 +14,7 @@ export default function App() {
       <Route path="/contact" element={<Contact />} />
       <Route path="/latest" element={<Latest />} />
       <Route path="/categories/:slug" element={<CategoryPage />} />
+      <Route path="/brands" element={<Brands />} />
     </Routes>
   )
 }

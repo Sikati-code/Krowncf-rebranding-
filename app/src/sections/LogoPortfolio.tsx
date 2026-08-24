@@ -1,22 +1,12 @@
 import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
-import { Sparkles, Crown } from 'lucide-react';
+import { Crown } from 'lucide-react';
+import { Link } from 'react-router';
 import { useLanguage } from '../contexts/LanguageContext';
+import { brandLogos } from '../data/brandLogos';
 
-const portfolioLogos = [
-  { id: 1, name: 'Royal Events', category: 'Event Planning', gradient: 'from-purple-500/20 to-indigo-500/20' },
-  { id: 2, name: 'TechNova', category: 'Technology', gradient: 'from-blue-500/20 to-cyan-500/20' },
-  { id: 3, name: 'GreenLeaf', category: 'Agriculture', gradient: 'from-green-500/20 to-emerald-500/20' },
-  { id: 4, name: 'UrbanStyle', category: 'Fashion', gradient: 'from-pink-500/20 to-rose-500/20' },
-  { id: 5, name: 'FinanceHub', category: 'Finance', gradient: 'from-amber-500/20 to-yellow-500/20' },
-  { id: 6, name: 'HealthPlus', category: 'Healthcare', gradient: 'from-red-500/20 to-orange-500/20' },
-  { id: 7, name: 'EcoWorld', category: 'Environment', gradient: 'from-teal-500/20 to-green-500/20' },
-  { id: 8, name: 'Artisan', category: 'Crafts', gradient: 'from-orange-500/20 to-red-500/20' },
-  { id: 9, name: 'DigitalPro', category: 'Digital Agency', gradient: 'from-violet-500/20 to-purple-500/20' },
-  { id: 10, name: 'FoodieHub', category: 'Food & Beverage', gradient: 'from-yellow-500/20 to-orange-500/20' },
-  { id: 11, name: 'TravelVibe', category: 'Tourism', gradient: 'from-cyan-500/20 to-blue-500/20' },
-  { id: 12, name: 'EduSmart', category: 'Education', gradient: 'from-indigo-500/20 to-violet-500/20' },
-];
+const rowOneLogos = brandLogos.filter((_, index) => index % 2 === 0);
+const rowTwoLogos = brandLogos.filter((_, index) => index % 2 === 1);
 
 export default function LogoPortfolio() {
   const { t } = useLanguage();
@@ -51,16 +41,17 @@ export default function LogoPortfolio() {
             <p className="text-base sm:text-lg text-white/50 max-w-2xl mx-auto px-4">
               {t('portfolio.subtitle')}
             </p>
+            <p className="mt-3 text-sm text-white/40">{brandLogos.length} logos displayed</p>
           </motion.div>
 
           {/* Row 1 - Left to Right */}
           <div className="relative overflow-hidden mb-6">
             <motion.div
-              className="flex gap-6 sm:gap-8"
+              className="flex gap-6 sm:gap-8 will-change-transform"
               animate={{ x: [0, -1000, 0] }}
               transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
             >
-              {[...portfolioLogos, ...portfolioLogos].map((logo, index) => (
+              {[...rowOneLogos, ...rowOneLogos].map((logo, index) => (
                 <motion.div
                   key={`${logo.id}-row1-${index}`}
                   className="flex-shrink-0 w-32 sm:w-40 h-32 sm:h-40 glass-card rounded-2xl flex items-center justify-center cursor-pointer"
@@ -75,13 +66,17 @@ export default function LogoPortfolio() {
                       }} />
                     </div>
 
-                    {/* Logo Placeholder */}
+                    {/* Logo Image */}
                     <motion.div
-                      className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center backdrop-blur-sm"
+                      className="relative w-full h-full rounded-xl bg-white/5 border border-white/20 flex items-center justify-center backdrop-blur-sm overflow-hidden p-2"
                       whileHover={{ rotate: [0, -5, 5, -5, 0] }}
                       transition={{ duration: 0.5 }}
                     >
-                      <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-white/60" />
+                      <img 
+                        src={logo.image} 
+                        alt={logo.name} 
+                        className="w-full h-full object-contain transition-transform duration-300 hover:scale-110" 
+                      />
                     </motion.div>
 
                     {/* Hover Overlay */}
@@ -91,6 +86,11 @@ export default function LogoPortfolio() {
                         <p className="text-[10px] text-white/80 truncate">{logo.category}</p>
                       </div>
                     </div>
+                    {logo.badge && (
+                      <span className="absolute top-2 left-2 rounded-full bg-krown-red px-2 py-1 text-[9px] font-semibold text-white">
+                        {logo.badge}
+                      </span>
+                    )}
                   </div>
                 </motion.div>
               ))}
@@ -100,11 +100,11 @@ export default function LogoPortfolio() {
           {/* Row 2 - Right to Left */}
           <div className="relative overflow-hidden">
             <motion.div
-              className="flex gap-6 sm:gap-8"
+              className="flex gap-6 sm:gap-8 will-change-transform"
               animate={{ x: [-1000, 0, -1000] }}
               transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
             >
-              {[...portfolioLogos, ...portfolioLogos].map((logo, index) => (
+              {[...rowTwoLogos, ...rowTwoLogos].map((logo, index) => (
                 <motion.div
                   key={`${logo.id}-row2-${index}`}
                   className="flex-shrink-0 w-32 sm:w-40 h-32 sm:h-40 glass-card rounded-2xl flex items-center justify-center cursor-pointer"
@@ -119,13 +119,17 @@ export default function LogoPortfolio() {
                       }} />
                     </div>
 
-                    {/* Logo Placeholder */}
+                    {/* Logo Image */}
                     <motion.div
-                      className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center backdrop-blur-sm"
+                      className="relative w-full h-full rounded-xl bg-white/5 border border-white/20 flex items-center justify-center backdrop-blur-sm overflow-hidden p-2"
                       whileHover={{ rotate: [0, -5, 5, -5, 0] }}
                       transition={{ duration: 0.5 }}
                     >
-                      <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-white/60" />
+                      <img 
+                        src={logo.image} 
+                        alt={logo.name} 
+                        className="w-full h-full object-contain transition-transform duration-300 hover:scale-110" 
+                      />
                     </motion.div>
 
                     {/* Hover Overlay */}
@@ -135,6 +139,11 @@ export default function LogoPortfolio() {
                         <p className="text-[10px] text-white/80 truncate">{logo.category}</p>
                       </div>
                     </div>
+                    {logo.badge && (
+                      <span className="absolute top-2 left-2 rounded-full bg-krown-red px-2 py-1 text-[9px] font-semibold text-white">
+                        {logo.badge}
+                      </span>
+                    )}
                   </div>
                 </motion.div>
               ))}
@@ -146,15 +155,17 @@ export default function LogoPortfolio() {
             initial={{ opacity: 0, y: 20 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="text-center mt-12 sm:mt-16"
+            className="text-center mt-12 sm:mt-16 flex justify-center"
           >
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="px-8 py-4 bg-gradient-to-r from-krown-red to-krown-red-dark text-white font-medium rounded-full hover:shadow-glow transition-all"
-            >
-              {t('portfolio.cta')}
-            </motion.button>
+            <Link to="/brands">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="px-8 py-4 bg-gradient-to-r from-krown-red to-krown-red-dark text-white font-medium rounded-full hover:shadow-glow transition-all"
+              >
+                {t('portfolio.cta')}
+              </motion.button>
+            </Link>
           </motion.div>
         </div>
       </div>
