@@ -79,7 +79,7 @@ export default function Header() {
               <img
                 src="/assets/logo.png"
                 alt="Krown Logo"
-                className="w-64 h-40 sm:w-72 sm:h-44 object-contain"
+                className="w-[300px] h-[200px] sm:w-[400px] sm:h-[250px] object-contain scale-125"
               />
             </Link>
 

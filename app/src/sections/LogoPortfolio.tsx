@@ -52,11 +52,11 @@ export default function LogoPortfolio() {
               transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
             >
               {[...rowOneLogos, ...rowOneLogos].map((logo, index) => (
-                <motion.div
-                  key={`${logo.id}-row1-${index}`}
-                  className="flex-shrink-0 w-32 sm:w-40 h-32 sm:h-40 glass-card rounded-2xl flex items-center justify-center cursor-pointer"
-                  whileHover={{ scale: 1.1, rotate: 5 }}
-                >
+                <Link key={`${logo.id}-row1-${index}`} to={`/design/${logo.id}`}>
+                  <motion.div
+                    className="flex-shrink-0 w-32 sm:w-40 h-32 sm:h-40 glass-card rounded-2xl flex items-center justify-center cursor-pointer"
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                  >
                   <div className={`relative w-full h-full rounded-2xl bg-gradient-to-br ${logo.gradient} flex items-center justify-center p-4 overflow-hidden`}>
                     {/* Background Pattern */}
                     <div className="absolute inset-0 opacity-20">
@@ -68,14 +68,14 @@ export default function LogoPortfolio() {
 
                     {/* Logo Image */}
                     <motion.div
-                      className="relative w-full h-full rounded-xl bg-white/5 border border-white/20 flex items-center justify-center backdrop-blur-sm overflow-hidden p-2"
+                      className="relative w-full h-full rounded-xl design-image-wrapper light-bg border border-white/20 flex items-center justify-center backdrop-blur-sm overflow-hidden p-2"
                       whileHover={{ rotate: [0, -5, 5, -5, 0] }}
                       transition={{ duration: 0.5 }}
                     >
                       <img 
                         src={logo.image} 
                         alt={logo.name} 
-                        className="w-full h-full object-contain transition-transform duration-300 hover:scale-110" 
+                        className="w-full h-full object-contain transition-transform duration-300 hover:scale-110 design-image-shadow" 
                       />
                     </motion.div>
 
@@ -92,7 +92,8 @@ export default function LogoPortfolio() {
                       </span>
                     )}
                   </div>
-                </motion.div>
+                  </motion.div>
+                </Link>
               ))}
             </motion.div>
           </div>
@@ -105,11 +106,11 @@ export default function LogoPortfolio() {
               transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
             >
               {[...rowTwoLogos, ...rowTwoLogos].map((logo, index) => (
-                <motion.div
-                  key={`${logo.id}-row2-${index}`}
-                  className="flex-shrink-0 w-32 sm:w-40 h-32 sm:h-40 glass-card rounded-2xl flex items-center justify-center cursor-pointer"
-                  whileHover={{ scale: 1.1, rotate: -5 }}
-                >
+                <Link key={`${logo.id}-row2-${index}`} to={`/design/${logo.id}`}>
+                  <motion.div
+                    className="flex-shrink-0 w-32 sm:w-40 h-32 sm:h-40 glass-card rounded-2xl flex items-center justify-center cursor-pointer"
+                    whileHover={{ scale: 1.1, rotate: -5 }}
+                  >
                   <div className={`relative w-full h-full rounded-2xl bg-gradient-to-br ${logo.gradient} flex items-center justify-center p-4 overflow-hidden`}>
                     {/* Background Pattern */}
                     <div className="absolute inset-0 opacity-20">
@@ -121,14 +122,14 @@ export default function LogoPortfolio() {
 
                     {/* Logo Image */}
                     <motion.div
-                      className="relative w-full h-full rounded-xl bg-white/5 border border-white/20 flex items-center justify-center backdrop-blur-sm overflow-hidden p-2"
+                      className="relative w-full h-full rounded-xl design-image-wrapper light-bg border border-white/20 flex items-center justify-center backdrop-blur-sm overflow-hidden p-2"
                       whileHover={{ rotate: [0, -5, 5, -5, 0] }}
                       transition={{ duration: 0.5 }}
                     >
                       <img 
                         src={logo.image} 
                         alt={logo.name} 
-                        className="w-full h-full object-contain transition-transform duration-300 hover:scale-110" 
+                        className="w-full h-full object-contain transition-transform duration-300 hover:scale-110 design-image-shadow" 
                       />
                     </motion.div>
 
@@ -145,7 +146,8 @@ export default function LogoPortfolio() {
                       </span>
                     )}
                   </div>
-                </motion.div>
+                  </motion.div>
+                </Link>
               ))}
             </motion.div>
           </div>
@@ -157,7 +159,7 @@ export default function LogoPortfolio() {
             transition={{ duration: 0.6, delay: 0.4 }}
             className="text-center mt-12 sm:mt-16 flex justify-center"
           >
-            <Link to="/brands">
+            <Link to="/all-designs">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
