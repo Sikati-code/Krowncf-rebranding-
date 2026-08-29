@@ -1,7 +1,7 @@
 import { useParams, Link } from 'react-router';
 import { useState } from 'react';
 import { categories } from '../data/categories';
-import { brandLogos } from '../data/brandLogos';
+import { logos } from '../data/logos';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Star, Download, TrendingUp, Sparkles, ArrowLeft } from 'lucide-react';
 
@@ -18,9 +18,9 @@ export default function DesignDetail() {
   const category = categories.find(c => c.designs.some(d => d.id === id));
   
   // If not found in categories, try brand logos
-  const brandLogo = !design ? brandLogos.find(b => b.id === parseInt(id || '0')) : null;
+  const logo = !design ? logos.find(l => l.id === parseInt(id || '0')) : null;
   
-  if (!design && !brandLogo) {
+  if (!design && !logo) {
     return (
       <div className="min-h-screen bg-krown-black flex items-center justify-center">
         <div className="text-center">
@@ -31,16 +31,16 @@ export default function DesignDetail() {
     );
   }
   
-  // Use either design or brandLogo
+  // Use either design or logo
   const item = design || {
-    id: brandLogo?.id.toString() || '',
-    title: brandLogo?.name || '',
-    titleFr: brandLogo?.name || '',
-    image: brandLogo?.image || '',
-    price: brandLogo?.price || '₦10,000',
-    downloads: brandLogo?.downloads || 0,
+    id: logo?.id.toString() || '',
+    title: logo?.name || '',
+    titleFr: logo?.name || '',
+    image: logo?.image || '',
+    price: '', // No price for portfolio logos
+    downloads: 0,
     rating: 4.5,
-    isTrending: brandLogo?.badge === 'Best Seller',
+    isTrending: false,
     isNew: false,
   };
   
@@ -49,6 +49,8 @@ export default function DesignDetail() {
     name: 'Brand Logos', 
     nameFr: 'Logos de Marque'
   };
+  
+  const isPortfolioLogo = !!logo;
   
   return (
     <div className="min-h-screen bg-gradient-to-b from-krown-black via-krown-dark/50 to-krown-black">
@@ -81,7 +83,13 @@ export default function DesignDetail() {
               <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
                 {language === 'fr' ? item.titleFr : item.title}
               </h1>
-              <p className="text-krown-red text-xl sm:text-2xl font-bold mb-4">{item.price}</p>
+              {!isPortfolioLogo && (
+                <p className="text-krown-red text-xl sm:text-2xl font-bold mb-4">{item.price}</p>
+              )}
+              
+              {isPortfolioLogo && logo && (
+                <p className="text-white/60 text-lg mb-4">{logo.industry}</p>
+              )}
               
               <div className="flex flex-wrap gap-2 mb-4">
                 {item.isTrending && (
@@ -98,16 +106,18 @@ export default function DesignDetail() {
                 )}
               </div>
               
-              <div className="flex flex-wrap gap-4 text-sm text-white/60 mb-6">
-                <span className="flex items-center gap-1">
-                  <Download className="w-4 h-4" />
-                  {item.downloads} {language === 'fr' ? 'téléchargements' : 'downloads'}
-                </span>
-                <span className="flex items-center gap-1">
-                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                  {item.rating} / 5.0
-                </span>
-              </div>
+              {!isPortfolioLogo && (
+                <div className="flex flex-wrap gap-4 text-sm text-white/60 mb-6">
+                  <span className="flex items-center gap-1">
+                    <Download className="w-4 h-4" />
+                    {item.downloads} {language === 'fr' ? 'téléchargements' : 'downloads'}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                    {item.rating} / 5.0
+                  </span>
+                </div>
+              )}
               
               <div className="bg-white/5 rounded-xl p-4 mb-6 border border-white/10">
                 <h3 className="font-bold text-white mb-3">
@@ -121,14 +131,16 @@ export default function DesignDetail() {
                 </div>
               </div>
               
-              {/* Download Button */}
-              <button
-                onClick={() => setShowUpgrade(true)}
-                className="w-full py-4 bg-gradient-to-r from-krown-red to-krown-orange text-white font-bold rounded-xl hover:scale-105 transition-transform flex items-center justify-center gap-2 mb-6"
-              >
-                <Download className="w-5 h-5" />
-                {language === 'fr' ? 'Télécharger' : 'Download'}
-              </button>
+              {/* Download Button - Only for category designs, not portfolio logos */}
+              {!isPortfolioLogo && (
+                <button
+                  onClick={() => setShowUpgrade(true)}
+                  className="w-full py-4 bg-gradient-to-r from-krown-red to-krown-orange text-white font-bold rounded-xl hover:scale-105 transition-transform flex items-center justify-center gap-2 mb-6"
+                >
+                  <Download className="w-5 h-5" />
+                  {language === 'fr' ? 'Télécharger' : 'Download'}
+                </button>
+              )}
               
               {/* Tags */}
               <div className="flex flex-wrap gap-2">
@@ -177,19 +189,19 @@ export default function DesignDetail() {
           )}
           
           {/* Related Brand Logos */}
-          {brandLogo && (
+          {logo && (
             <div className="mt-12">
               <h2 className="text-2xl font-bold text-white mb-4">
                 {language === 'fr' ? 'Autres Logos' : 'Other Logos'}
               </h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                {brandLogos
-                  .filter(b => b.id !== brandLogo.id)
+                {logos
+                  .filter(l => l.id !== logo.id)
                   .slice(0, 4)
                   .map((related) => (
                     <Link key={related.id} to={`/design/${related.id}`}>
                       <div className="bg-white/5 rounded-xl p-4 hover:scale-105 transition-transform cursor-pointer border border-white/10 hover:border-krown-red/30">
-                        <div className="design-image-wrapper light-bg aspect-square flex items-center justify-center mb-3">
+                        <div className="bg-white aspect-square flex items-center justify-center mb-3 rounded-xl">
                           <img 
                             src={related.image} 
                             alt={related.name}
@@ -199,7 +211,7 @@ export default function DesignDetail() {
                         <p className="text-sm font-bold text-white truncate">
                           {related.name}
                         </p>
-                        <p className="text-xs text-krown-red">{related.price}</p>
+                        <p className="text-xs text-white/60">{related.industry}</p>
                       </div>
                     </Link>
                   ))}
