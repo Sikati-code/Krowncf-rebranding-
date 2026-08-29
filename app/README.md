@@ -6,6 +6,10 @@ A comprehensive, bilingual (English/French) graphic design marketplace built wit
 
 Krown Creative Factory is Africa's premier destination for culturally suited design assets. The platform serves as a marketplace for premium graphic designs, templates, and creative assets, with a focus on African cultural heritage combined with modern design aesthetics. The site also offers professional training programs and workshops for aspiring designers.
 
+## 🌐 Live Links
+- Live site: [https://app-liart-psi-22.vercel.app](https://app-liart-psi-22.vercel.app/)
+- Deployment details: [https://vercel.com/sikati-codes-projects/app/9m3591jGqC7aPfdcEqSwNX84j2uD](https://vercel.com/sikati-codes-projects/app/9m3591jGqC7aPfdcEqSwNX84j2uD)
+
 ### Key Features
 - **Dynamic Language Switching**: Instant English/French translation across all pages
 - **Dynamic Location Display**: Lagos, Nigeria (English) / Yaoundé, Cameroun (French)

@@ -1,6 +1,6 @@
 import { Link } from 'react-router';
 import { motion } from 'framer-motion';
-import { brandLogos } from '../data/brandLogos';
+import { logos } from '../data/logos';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ArrowLeft } from 'lucide-react';
 
@@ -26,8 +26,8 @@ export default function AllDesigns() {
             </h1>
             <p className="text-white/60 text-lg">
               {language === 'fr' 
-                ? `${brandLogos.length} logos de marques créatifs` 
-                : `${brandLogos.length} creative brand logos`}
+                ? `${logos.length} logos de marques créatifs` 
+                : `${logos.length} creative brand logos`}
             </p>
           </div>
 
@@ -38,7 +38,7 @@ export default function AllDesigns() {
             transition={{ duration: 0.5 }}
             className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6"
           >
-            {brandLogos.map((logo, index) => (
+            {logos.map((logo, index) => (
               <motion.div
                 key={logo.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -47,7 +47,7 @@ export default function AllDesigns() {
               >
                 <Link to={`/design/${logo.id}`}>
                   <div className="glass-card rounded-2xl p-4 hover:scale-105 transition-transform cursor-pointer border border-white/10 hover:border-krown-red/30">
-                    <div className="design-image-wrapper light-bg aspect-square flex items-center justify-center mb-3 rounded-xl">
+                    <div className="bg-white aspect-square flex items-center justify-center mb-3 rounded-xl">
                       <img 
                         src={logo.image} 
                         alt={logo.name}
@@ -55,15 +55,7 @@ export default function AllDesigns() {
                       />
                     </div>
                     <h3 className="text-sm font-bold text-white truncate mb-1">{logo.name}</h3>
-                    <p className="text-xs text-white/60 truncate">{logo.category}</p>
-                    <p className="text-xs text-krown-red font-bold mt-1">{logo.price}</p>
-                    {logo.badge && (
-                      <span className={`inline-block mt-2 px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                        logo.badge === 'Premium' ? 'bg-krown-orange text-white' : 'bg-krown-red text-white'
-                      }`}>
-                        {logo.badge}
-                      </span>
-                    )}
+                    <p className="text-xs text-white/60 truncate">{logo.industry}</p>
                   </div>
                 </Link>
               </motion.div>

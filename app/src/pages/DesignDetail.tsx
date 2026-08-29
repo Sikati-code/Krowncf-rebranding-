@@ -17,7 +17,7 @@ export default function DesignDetail() {
   
   const category = categories.find(c => c.designs.some(d => d.id === id));
   
-  // If not found in categories, try brand logos
+  // If not found in categories, try logos
   const logo = !design ? logos.find(l => l.id === parseInt(id || '0')) : null;
   
   if (!design && !logo) {
@@ -83,7 +83,7 @@ export default function DesignDetail() {
               <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
                 {language === 'fr' ? item.titleFr : item.title}
               </h1>
-              {!isPortfolioLogo && (
+              {!isPortfolioLogo && item.price && (
                 <p className="text-krown-red text-xl sm:text-2xl font-bold mb-4">{item.price}</p>
               )}
               

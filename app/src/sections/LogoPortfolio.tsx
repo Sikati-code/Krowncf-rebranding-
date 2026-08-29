@@ -3,10 +3,7 @@ import { useRef } from 'react';
 import { Crown } from 'lucide-react';
 import { Link } from 'react-router';
 import { useLanguage } from '../contexts/LanguageContext';
-import { brandLogos } from '../data/brandLogos';
-
-const rowOneLogos = brandLogos.filter((_, index) => index % 2 === 0);
-const rowTwoLogos = brandLogos.filter((_, index) => index % 2 === 1);
+import { logos, rowOneLogos, rowTwoLogos } from '../data/logos';
 
 export default function LogoPortfolio() {
   const { t } = useLanguage();
@@ -41,7 +38,7 @@ export default function LogoPortfolio() {
             <p className="text-base sm:text-lg text-white/50 max-w-2xl mx-auto px-4">
               {t('portfolio.subtitle')}
             </p>
-            <p className="mt-3 text-sm text-white/40">{brandLogos.length} logos displayed</p>
+            <p className="mt-3 text-sm text-white/40">{logos.length} logos displayed</p>
           </motion.div>
 
           {/* Row 1 - Left to Right */}
@@ -68,14 +65,14 @@ export default function LogoPortfolio() {
 
                     {/* Logo Image */}
                     <motion.div
-                      className="relative w-full h-full rounded-xl design-image-wrapper light-bg border border-white/20 flex items-center justify-center backdrop-blur-sm overflow-hidden p-2"
+                      className="relative w-full h-full rounded-xl bg-white flex items-center justify-center overflow-hidden p-2"
                       whileHover={{ rotate: [0, -5, 5, -5, 0] }}
                       transition={{ duration: 0.5 }}
                     >
                       <img 
                         src={logo.image} 
                         alt={logo.name} 
-                        className="w-full h-full object-contain transition-transform duration-300 hover:scale-110 design-image-shadow" 
+                        className="w-full h-full object-contain transition-transform duration-300 hover:scale-110" 
                       />
                     </motion.div>
 
@@ -83,14 +80,9 @@ export default function LogoPortfolio() {
                     <div className="absolute inset-0 bg-gradient-to-t from-krown-red/80 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-end p-2">
                       <div className="w-full">
                         <h3 className="text-xs font-bold text-white mb-0.5 truncate">{logo.name}</h3>
-                        <p className="text-[10px] text-white/80 truncate">{logo.category}</p>
+                        <p className="text-[10px] text-white/80 truncate">{logo.industry}</p>
                       </div>
                     </div>
-                    {logo.badge && (
-                      <span className="absolute top-2 left-2 rounded-full bg-krown-red px-2 py-1 text-[9px] font-semibold text-white">
-                        {logo.badge}
-                      </span>
-                    )}
                   </div>
                   </motion.div>
                 </Link>
@@ -122,14 +114,14 @@ export default function LogoPortfolio() {
 
                     {/* Logo Image */}
                     <motion.div
-                      className="relative w-full h-full rounded-xl design-image-wrapper light-bg border border-white/20 flex items-center justify-center backdrop-blur-sm overflow-hidden p-2"
+                      className="relative w-full h-full rounded-xl bg-white flex items-center justify-center overflow-hidden p-2"
                       whileHover={{ rotate: [0, -5, 5, -5, 0] }}
                       transition={{ duration: 0.5 }}
                     >
                       <img 
                         src={logo.image} 
                         alt={logo.name} 
-                        className="w-full h-full object-contain transition-transform duration-300 hover:scale-110 design-image-shadow" 
+                        className="w-full h-full object-contain transition-transform duration-300 hover:scale-110" 
                       />
                     </motion.div>
 
@@ -137,14 +129,9 @@ export default function LogoPortfolio() {
                     <div className="absolute inset-0 bg-gradient-to-t from-krown-red/80 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-end p-2">
                       <div className="w-full">
                         <h3 className="text-xs font-bold text-white mb-0.5 truncate">{logo.name}</h3>
-                        <p className="text-[10px] text-white/80 truncate">{logo.category}</p>
+                        <p className="text-[10px] text-white/80 truncate">{logo.industry}</p>
                       </div>
                     </div>
-                    {logo.badge && (
-                      <span className="absolute top-2 left-2 rounded-full bg-krown-red px-2 py-1 text-[9px] font-semibold text-white">
-                        {logo.badge}
-                      </span>
-                    )}
                   </div>
                   </motion.div>
                 </Link>
