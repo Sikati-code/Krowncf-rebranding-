@@ -81,7 +81,7 @@ export default function Header() {
               <img
                 src="/assets/logo.png"
                 alt="Krown Logo"
-                className="h-16 sm:h-20 md:h-24 lg:h-28 w-auto max-h-full object-contain origin-left scale-110 sm:scale-125"
+                className="h-20 sm:h-24 md:h-28 lg:h-32 w-auto max-h-full object-contain origin-left scale-125 sm:scale-150"
               />
             </Link>
 

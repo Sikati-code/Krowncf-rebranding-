@@ -6,7 +6,6 @@ import {
   Mail, 
   ArrowRight,
   Instagram,
-  Twitter,
   Facebook,
   Youtube,
   Send
@@ -26,9 +25,9 @@ const quickLinks = [
 
 const socialLinks = [
   { name: 'Instagram', icon: Instagram, href: 'https://www.instagram.com/krowncf?igsi=MWVjc3prZmN4YmRs' },
-  { name: 'Twitter', icon: Twitter, href: '#' },
   { name: 'Facebook', icon: Facebook, href: 'https://www.facebook.com/krownartwork/' },
   { name: 'YouTube', icon: Youtube, href: 'https://youtube.com/@krowncf?si=A7rR-99p1Cubke_e' },
+  { name: 'Pinterest', icon: null, href: 'https://pin.it/6MQG2sP3e' },
 ];
 
 export default function Footer() {
@@ -141,15 +140,15 @@ export default function Footer() {
                 whileHover={{ scale: 1.05 }}
                 transition={{ duration: 0.3 }}
               >
-                <motion.div 
-                  className="w-10 h-10 rounded-xl bg-krown-red/20 flex items-center justify-center"
+                <motion.div
+                  className="w-12 h-12 rounded-xl bg-krown-red/20 flex items-center justify-center"
                   whileHover={{ rotate: [0, -10, 10, -10, 0] }}
                   transition={{ duration: 0.5 }}
                 >
-                  <img 
-                    src="/assets/logo.png" 
-                    alt="Krown Logo" 
-                    className="w-5 h-5"
+                  <img
+                    src="/assets/logo.png"
+                    alt="Krown Logo"
+                    className="w-7 h-7"
                   />
                 </motion.div>
                 <div>
@@ -169,7 +168,11 @@ export default function Footer() {
                     href={social.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-krown-red hover:border-krown-red/30 transition-all duration-300"
+                    className={`w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center transition-all duration-300 ${
+                      social.name === 'Pinterest'
+                        ? 'text-white/40 hover:text-[#BD081C] hover:border-[#BD081C]/30'
+                        : 'text-white/40 hover:text-krown-red hover:border-krown-red/30'
+                    }`}
                     aria-label={social.name}
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -177,7 +180,13 @@ export default function Footer() {
                     whileHover={{ scale: 1.1, y: -2 }}
                     whileTap={{ scale: 0.9 }}
                   >
-                    <social.icon className="w-4 h-4" />
+                    {social.icon ? (
+                      <social.icon className="w-4 h-4" />
+                    ) : (
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 0C5.373 0 0 5.373 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738.098.119.112.224.083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.631-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/>
+                      </svg>
+                    )}
                   </motion.a>
                 ))}
               </div>

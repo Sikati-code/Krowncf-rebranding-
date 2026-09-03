@@ -5,6 +5,8 @@ export interface SocialLinks {
     twitter?: string;
     email?: string;
     github?: string;
+    pinterest?: string;
+    youtube?: string;
 }
 
 export interface TeamMember {
@@ -46,7 +48,11 @@ export const teamMembers: TeamMember[] = [
     bio: 'Creative visionary and design leader shaping the visual identity of Krown Creative Factory.',
     bioFr: 'Visionnaire créatif et leader en design façonnant l\'identité visuelle de Krown Creative Factory.',
     image: '/assets/our team/joshua-shopekan.jpg',
-    social: {},
+    social: {
+      pinterest: 'https://pin.it/2Obn1ru88',
+      youtube: 'https://www.youtube.com/@themachineryInc',
+      instagram: 'https://www.instagram.com/joshshop._',
+    },
   },
 
   // ===== 3. TECH ARCHITECT & WEB DESIGNER =====
@@ -63,7 +69,7 @@ export const teamMembers: TeamMember[] = [
       linkedin: 'https://linkedin.com/in/...',
       github: 'https://github.com/...',
       facebook: 'https://facebook.com/...',
-      email: 'developer@krowncf.com',
+      email: 'sikatifotso5@gmail.com',
     },
   },
 
@@ -76,7 +82,10 @@ export const teamMembers: TeamMember[] = [
     bio: 'Versatile designer and operations support ensuring smooth execution of creative projects.',
     bioFr: 'Designer polyvalent et soutien opérationnel assurant l\'exécution fluide des projets créatifs.',
     image: '/assets/team/samuel-odugbesan.jpg',
-    social: {},
+    social: {
+      instagram: 'https://www.instagram.com/shegzy_graphics23',
+      facebook: 'https://www.facebook.com/profile.php?id=100095238713179',
+    },
   },
 
   // ===== 5. OPERATIONS HEAD =====
@@ -87,9 +96,9 @@ export const teamMembers: TeamMember[] = [
     roleFr: 'Responsable des Opérations',
     bio: 'Operations strategist ensuring Krown Creative Factory runs seamlessly and efficiently.',
     bioFr: 'Stratège opérationnelle veillant à ce que Krown Creative Factory fonctionne de manière fluide et efficace.',
-    image: '/assets/our team/anyi-dalysia-fotoh.jpeg',
+    image: '/assets/our team/anyi-dalysia-fotoh.jpg',
     social: {
-        instagram: 'https://www.instagram.com/anyidalysia?igsi=MTVoNm5oa3B1bmhtYw==',
+        instagram: 'https://www.instagram.com/anyidalysia',
         facebook: 'https://www.facebook.com/share/1HLhWg99mh/',
     },
   },

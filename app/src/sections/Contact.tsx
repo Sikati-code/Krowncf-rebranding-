@@ -1,24 +1,24 @@
 import { motion, useInView, AnimatePresence } from 'framer-motion';
 import { useRef, useState } from 'react';
-import { Crown, Mail, MessageCircle, Phone, Send, X, Minimize2, Sparkles, MessageSquare, MapPin } from 'lucide-react';
+import { Crown, Mail, MessageCircle, Phone, Send, X, Minimize2, MessageSquare, MapPin } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 const contactMethods = [
   {
     icon: Mail,
-    label: 'Email (General)',
+    label: 'Email',
     value: 'Info@krowncf.com',
     link: 'mailto:Info@krowncf.com',
     color: 'from-blue-500 to-blue-600',
     hoverColor: 'hover:border-blue-500/50'
   },
   {
-    icon: Mail,
-    label: 'Email (Branding)',
-    value: 'krownassets@gmail.com',
-    link: 'mailto:krownassets@gmail.com',
-    color: 'from-blue-500 to-blue-600',
-    hoverColor: 'hover:border-blue-500/50'
+    icon: Phone,
+    label: 'Phone',
+    value: '+234 813 680 4699',
+    link: 'tel:+2348136804699',
+    color: 'from-krown-red to-krown-red-dark',
+    hoverColor: 'hover:border-krown-red/50'
   },
   {
     icon: MessageCircle,
@@ -27,38 +27,6 @@ const contactMethods = [
     link: 'https://wa.me/2348136804699',
     color: 'from-green-500 to-green-600',
     hoverColor: 'hover:border-green-500/50'
-  },
-  {
-    icon: MessageSquare,
-    label: 'Messenger',
-    value: 'Krown Creative',
-    link: 'https://m.me/krowncreative',
-    color: 'from-blue-400 to-blue-500',
-    hoverColor: 'hover:border-blue-400/50'
-  },
-  {
-    icon: Sparkles,
-    label: 'Instagram',
-    value: '@krowncreative',
-    link: 'https://instagram.com/krowncreative',
-    color: 'from-pink-500 to-purple-600',
-    hoverColor: 'hover:border-pink-500/50'
-  },
-  {
-    icon: Phone,
-    label: 'Phone (Nigeria)',
-    value: '+234 813 680 4699',
-    link: 'tel:+2348136804699',
-    color: 'from-krown-red to-krown-red-dark',
-    hoverColor: 'hover:border-krown-red/50'
-  },
-  {
-    icon: Phone,
-    label: 'Phone (Cameroon)',
-    value: '+237 680 20 07 04',
-    link: 'tel:+237680200704',
-    color: 'from-krown-red to-krown-red-dark',
-    hoverColor: 'hover:border-krown-red/50'
   }
 ];
 
@@ -431,30 +399,41 @@ export default function Contact() {
               initial={{ opacity: 0, x: 40 }}
               animate={isInView ? { opacity: 1, x: 0 } : {}}
               transition={{ duration: 0.8, delay: 0.5 }}
-              className="space-y-4"
+              className="space-y-6"
             >
-              <h3 className="text-2xl sm:text-3xl font-bold text-white mb-6">
+              <h3 className="text-2xl sm:text-3xl font-bold text-white mb-8 text-center">
                 {t('contact.direct')}
               </h3>
-              <div className="grid sm:grid-cols-2 gap-4">
+              <div className="flex flex-col md:flex-row gap-6 justify-center items-stretch">
                 {contactMethods.map((method, index) => (
                   <motion.a
                     key={method.label}
                     href={method.link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 30 }}
                     animate={isInView ? { opacity: 1, y: 0 } : {}}
-                    transition={{ delay: 0.6 + index * 0.1 }}
-                    whileHover={{ scale: 1.05, y: -5 }}
+                    transition={{ delay: 0.6 + index * 0.15 }}
+                    whileHover={{ scale: 1.05, y: -8 }}
                     whileTap={{ scale: 0.98 }}
-                    className={`glass-card p-6 rounded-xl border border-white/10 ${method.hoverColor} transition-all duration-300 group`}
+                    className={`flex-1 glass-card p-8 rounded-2xl border border-white/10 ${method.hoverColor} transition-all duration-300 group relative overflow-hidden`}
                   >
-                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${method.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-                      <method.icon className="w-6 h-6 text-white" />
+                    {/* Background Glow Effect */}
+                    <div className={`absolute inset-0 bg-gradient-to-br ${method.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
+                    
+                    {/* Icon Container */}
+                    <div className={`relative w-16 h-16 mx-auto mb-6 rounded-2xl bg-gradient-to-br ${method.color} flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg`}>
+                      <method.icon className="w-8 h-8 text-white" />
                     </div>
-                    <h4 className="text-lg font-semibold text-white mb-1">{method.label}</h4>
-                    <p className="text-sm text-white/60">{method.value}</p>
+                    
+                    {/* Text Content */}
+                    <div className="relative text-center">
+                      <h4 className="text-xl font-bold text-white mb-2">{method.label}</h4>
+                      <p className="text-base text-white/80 font-medium">{method.value}</p>
+                    </div>
+                    
+                    {/* Hover Indicator */}
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-white/20 to-transparent transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
                   </motion.a>
                 ))}
               </div>

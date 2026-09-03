@@ -2,7 +2,7 @@ import { Link } from 'react-router';
 import { motion } from 'framer-motion';
 import { logos } from '../data/logos';
 import { useLanguage } from '../contexts/LanguageContext';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Sparkles } from 'lucide-react';
 
 export default function AllDesigns() {
   const { language, t } = useLanguage();
@@ -60,6 +60,59 @@ export default function AllDesigns() {
                 </Link>
               </motion.div>
             ))}
+          </motion.div>
+
+          {/* Need Branding CTA Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+            className="mt-16"
+          >
+            <div className="glass-card rounded-3xl p-8 sm:p-12 border border-krown-red/20 relative overflow-hidden">
+              {/* Background Glow */}
+              <div className="absolute top-0 right-0 w-64 h-64 bg-krown-red/10 rounded-full blur-[100px] pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-48 h-48 bg-krown-orange/10 rounded-full blur-[80px] pointer-events-none" />
+
+              <div className="relative z-10 text-center">
+                <motion.div
+                  animate={{ rotate: [0, 5, -5, 0] }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                  className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-krown-red to-krown-red-dark mb-6"
+                >
+                  <Sparkles className="w-8 h-8 text-white" />
+                </motion.div>
+
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">
+                  {language === 'fr' ? 'Besoin d\'un logo personnalisé ?' : 'Need a Custom Logo?'}
+                </h2>
+
+                <p className="text-base sm:text-lg text-white/60 mb-8 max-w-2xl mx-auto">
+                  {language === 'fr'
+                    ? 'Laissez nos experts créer une identité de marque unique qui se démarque. Transformez votre vision en réalité.'
+                    : 'Let our experts create a unique brand identity that stands out. Transform your vision into reality.'}
+                </p>
+
+                <motion.a
+                  href="/#branding"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.98 }}
+                  animate={{
+                    backgroundPosition: ['0% 50%', '100% 50%', '0% 50%']
+                  }}
+                  transition={{
+                    duration: 3,
+                    repeat: Infinity,
+                    ease: "linear"
+                  }}
+                  className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-krown-red to-krown-orange text-white font-semibold rounded-xl hover:shadow-glow transition-all"
+                  style={{ backgroundSize: '200% auto' }}
+                >
+                  <Sparkles className="w-5 h-5" />
+                  {language === 'fr' ? 'Commencer Votre Projet' : 'Start Your Project'}
+                </motion.a>
+              </div>
+            </div>
           </motion.div>
         </div>
       </div>
