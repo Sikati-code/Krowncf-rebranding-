@@ -1,71 +1,9 @@
 import { motion, useInView } from 'framer-motion';
 import { useRef, useState, useEffect } from 'react';
-import { Crown, Award, Linkedin, Twitter, Instagram, ExternalLink, Sparkles, Target, Lightbulb } from 'lucide-react';
+import { Crown, Award, Linkedin, Instagram, Sparkles, Target, Lightbulb, Facebook, Github, Mail } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
-const teamMembers = [
-  {
-    name: 'David Shopekan',
-    role: 'Founder & Creative Director',
-    isFounder: true,
-    initials: 'DS',
-    color: 'from-yellow-500 to-amber-600',
-    social: {
-      linkedin: '#',
-      twitter: '#',
-      instagram: '#',
-      portfolio: '#'
-    }
-  },
-  {
-    name: 'Amina Ibrahim',
-    role: 'Lead Designer',
-    isFounder: false,
-    initials: 'AI',
-    color: 'from-krown-red to-krown-red-dark',
-    social: {
-      linkedin: '#',
-      twitter: '#',
-      instagram: '#'
-    }
-  },
-  {
-    name: 'Chukwuemeka Okafor',
-    role: 'Tech Architect',
-    isFounder: false,
-    initials: 'CO',
-    color: 'from-blue-500 to-indigo-600',
-    social: {
-      linkedin: '#',
-      twitter: '#',
-      instagram: '#'
-    }
-  },
-  {
-    name: 'Fatima Abdullahi',
-    role: 'Brand Strategist',
-    isFounder: false,
-    initials: 'FA',
-    color: 'from-purple-500 to-pink-600',
-    social: {
-      linkedin: '#',
-      twitter: '#',
-      instagram: '#'
-    }
-  },
-  {
-    name: 'Oluwaseun Adeyemi',
-    role: 'Operations Head',
-    isFounder: false,
-    initials: 'OA',
-    color: 'from-green-500 to-emerald-600',
-    social: {
-      linkedin: '#',
-      twitter: '#',
-      instagram: '#'
-    }
-  }
-];
+import { teamMembers } from '../data/team';
 
 const values = [
   { icon: Award, label: 'Excellence' },
@@ -123,7 +61,7 @@ function Counter({ value, suffix, label }: { value: number; suffix: string; labe
 }
 
 export default function About() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
   const [displayText, setDisplayText] = useState('');
@@ -381,96 +319,214 @@ export default function About() {
               </p>
             </div>
 
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 sm:gap-8">
-              {teamMembers.map((member, index) => (
+            <div className="space-y-8">
+              {/* Founder - Majestic Display */}
+              {teamMembers.filter(m => m.isFounder).map((member, index) => (
                 <motion.div
-                  key={member.name}
+                  key={member.id}
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
-                  whileHover={{ y: -10 }}
-                  className={`relative group ${member.isFounder ? 'lg:col-span-2 lg:row-span-2' : ''}`}
+                  className="relative"
                 >
-                  <div className={`glass-card p-6 sm:p-8 h-full transition-all duration-300 ${member.isFounder
-                      ? 'border-2 border-yellow-500/50 shadow-[0_0_30px_rgba(234,179,8,0.3)]'
-                      : 'hover:border-krown-red/30'
-                    }`}>
-                    {/* Avatar */}
-                    <div className={`relative w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-4 rounded-2xl bg-gradient-to-br ${member.color} flex items-center justify-center ${member.isFounder ? 'shadow-[0_0_20px_rgba(234,179,8,0.5)]' : ''
-                      }`}>
-                      <span className="text-2xl sm:text-3xl font-bold text-white">
-                        {member.initials}
-                      </span>
-                      {member.isFounder && (
+                  <motion.div
+                    animate={{ y: [0, -10, 0] }}
+                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                    className="glass-card p-8 sm:p-12 border-2 border-yellow-500/50 shadow-[0_0_40px_rgba(234,179,8,0.3)] rounded-3xl"
+                  >
+                    <div className="grid md:grid-cols-2 gap-8 items-center">
+                      {/* Founder Image */}
+                      <div className="relative">
                         <motion.div
-                          animate={{ rotate: 360 }}
-                          transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-                          className="absolute -inset-1 border-2 border-dashed border-yellow-500/30 rounded-2xl"
-                        />
-                      )}
-                    </div>
+                          animate={{
+                            boxShadow: [
+                              '0 0 30px rgba(234,179,8,0.3)',
+                              '0 0 60px rgba(234,179,8,0.5)',
+                              '0 0 30px rgba(234,179,8,0.3)',
+                            ]
+                          }}
+                          transition={{ duration: 3, repeat: Infinity }}
+                          className="relative w-48 h-48 sm:w-56 sm:h-56 mx-auto rounded-2xl bg-white flex items-center justify-center overflow-hidden shadow-[0_0_20px_rgba(234,179,8,0.5)]"
+                        >
+                          {member.image ? (
+                            <img src={member.image} alt={member.name} className="w-full h-full object-contain object-center" />
+                          ) : (
+                            <span className="text-4xl font-bold text-gray-800">{member.name.split(' ').map(n => n[0]).join('')}</span>
+                          )}
+                          <motion.div
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+                            className="absolute -inset-2 border-2 border-dashed border-yellow-500/50 rounded-2xl pointer-events-none"
+                          />
+                        </motion.div>
+                        {/* Crown Badge */}
+                        <motion.div
+                          animate={{ y: [0, -5, 0] }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                          className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-yellow-500 to-amber-600 text-white px-4 py-2 rounded-full shadow-lg"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Crown className="w-4 h-4" />
+                            <span className="text-sm font-bold">Founder</span>
+                          </div>
+                        </motion.div>
+                      </div>
 
-                    {/* Name & Role */}
-                    <div className="text-center mb-4">
-                      <h4 className={`text-lg sm:text-xl font-bold text-white mb-1 ${member.isFounder ? 'text-yellow-400' : ''}`}>
-                        {member.name}
-                      </h4>
-                      <p className="text-xs sm:text-sm text-white/60">{member.role}</p>
-                      {member.isFounder && (
-                        <div className="inline-flex items-center gap-1 px-3 py-1 mt-2 bg-yellow-500/20 rounded-full">
-                          <Crown className="w-3 h-3 text-yellow-400" />
-                          <span className="text-[10px] text-yellow-400 font-medium">{t('about.founder')}</span>
+                      {/* Founder Info */}
+                      <div className="text-center md:text-left">
+                        <h4 className="text-2xl sm:text-3xl font-bold text-yellow-400 mb-2">{member.name}</h4>
+                        <p className="text-lg text-white/90 mb-4">{language === 'fr' ? member.roleFr : member.role}</p>
+                        <p className="text-sm sm:text-base text-white/60 mb-6 leading-relaxed">
+                          {language === 'fr' ? member.bioFr : member.bio}
+                        </p>
+                        
+                        {/* Social Links */}
+                        <div className="flex justify-center md:justify-start gap-3">
+                          {member.social?.instagram && (
+                            <motion.a
+                              href={member.social.instagram}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              whileHover={{ scale: 1.1, y: -2 }}
+                              whileTap={{ scale: 0.95 }}
+                              className="w-10 h-10 rounded-lg bg-yellow-500/20 flex items-center justify-center text-yellow-400 hover:bg-yellow-500/30 transition-all"
+                            >
+                              <Instagram className="w-5 h-5" />
+                            </motion.a>
+                          )}
+                          {member.social?.facebook && (
+                            <motion.a
+                              href={member.social.facebook}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              whileHover={{ scale: 1.1, y: -2 }}
+                              whileTap={{ scale: 0.95 }}
+                              className="w-10 h-10 rounded-lg bg-yellow-500/20 flex items-center justify-center text-yellow-400 hover:bg-yellow-500/30 transition-all"
+                            >
+                              <Facebook className="w-5 h-5" />
+                            </motion.a>
+                          )}
+                          {member.social?.linkedin && (
+                            <motion.a
+                              href={member.social.linkedin}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              whileHover={{ scale: 1.1, y: -2 }}
+                              whileTap={{ scale: 0.95 }}
+                              className="w-10 h-10 rounded-lg bg-yellow-500/20 flex items-center justify-center text-yellow-400 hover:bg-yellow-500/30 transition-all"
+                            >
+                              <Linkedin className="w-5 h-5" />
+                            </motion.a>
+                          )}
+                          {member.social?.email && (
+                            <motion.a
+                              href={`mailto:${member.social.email}`}
+                              whileHover={{ scale: 1.1, y: -2 }}
+                              whileTap={{ scale: 0.95 }}
+                              className="w-10 h-10 rounded-lg bg-yellow-500/20 flex items-center justify-center text-yellow-400 hover:bg-yellow-500/30 transition-all"
+                            >
+                              <Mail className="w-5 h-5" />
+                            </motion.a>
+                          )}
                         </div>
-                      )}
+                      </div>
                     </div>
-
-                    {/* Social Links */}
-                    <div className="flex justify-center gap-2">
-                      {member.social.linkedin && (
-                        <motion.a
-                          href={member.social.linkedin}
-                          whileHover={{ scale: 1.1, y: -2 }}
-                          whileTap={{ scale: 0.95 }}
-                          className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-all"
-                        >
-                          <Linkedin className="w-4 h-4" />
-                        </motion.a>
-                      )}
-                      {member.social.twitter && (
-                        <motion.a
-                          href={member.social.twitter}
-                          whileHover={{ scale: 1.1, y: -2 }}
-                          whileTap={{ scale: 0.95 }}
-                          className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-all"
-                        >
-                          <Twitter className="w-4 h-4" />
-                        </motion.a>
-                      )}
-                      {member.social.instagram && (
-                        <motion.a
-                          href={member.social.instagram}
-                          whileHover={{ scale: 1.1, y: -2 }}
-                          whileTap={{ scale: 0.95 }}
-                          className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-all"
-                        >
-                          <Instagram className="w-4 h-4" />
-                        </motion.a>
-                      )}
-                      {member.social.portfolio && (
-                        <motion.a
-                          href={member.social.portfolio}
-                          whileHover={{ scale: 1.1, y: -2 }}
-                          whileTap={{ scale: 0.95 }}
-                          className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-all"
-                        >
-                          <ExternalLink className="w-4 h-4" />
-                        </motion.a>
-                      )}
-                    </div>
-                  </div>
+                  </motion.div>
                 </motion.div>
               ))}
+
+              {/* Other Team Members */}
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {teamMembers.filter(m => !m.isFounder).map((member, index) => (
+                  <motion.div
+                    key={member.id}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.1 }}
+                    whileHover={{ y: -10 }}
+                    className="relative group"
+                  >
+                    <div className="glass-card p-6 h-full transition-all duration-300 hover:border-krown-red/30 rounded-2xl">
+                      {/* Avatar */}
+                      <div className="relative w-24 h-24 mx-auto mb-4 rounded-xl bg-white flex items-center justify-center overflow-hidden">
+                        {member.image ? (
+                          <img src={member.image} alt={member.name} className="w-full h-full object-contain object-center" />
+                        ) : (
+                          <span className="text-2xl font-bold text-gray-800">{member.name.split(' ').map(n => n[0]).join('')}</span>
+                        )}
+                        {member.isDeveloper && (
+                          <div className="absolute -top-2 -right-2 bg-krown-red text-white p-1.5 rounded-full shadow-lg">
+                            <Sparkles className="w-3 h-3" />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Name & Role */}
+                      <div className="text-center mb-4">
+                        <h4 className="text-lg font-bold text-white mb-1">{member.name}</h4>
+                        <p className="text-sm text-white/80">{language === 'fr' ? member.roleFr : member.role}</p>
+                      </div>
+
+                      {/* Bio */}
+                      <p className="text-xs text-white/60 text-center mb-4 line-clamp-3">
+                        {language === 'fr' ? member.bioFr : member.bio}
+                      </p>
+
+                      {/* Social Links */}
+                      <div className="flex justify-center gap-2">
+                        {member.social?.linkedin && (
+                          <motion.a
+                            href={member.social.linkedin}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            whileHover={{ scale: 1.1, y: -2 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-all"
+                          >
+                            <Linkedin className="w-4 h-4" />
+                          </motion.a>
+                        )}
+                        {member.social?.github && (
+                          <motion.a
+                            href={member.social.github}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            whileHover={{ scale: 1.1, y: -2 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-all"
+                          >
+                            <Github className="w-4 h-4" />
+                          </motion.a>
+                        )}
+                        {member.social?.facebook && (
+                          <motion.a
+                            href={member.social.facebook}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            whileHover={{ scale: 1.1, y: -2 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-all"
+                          >
+                            <Facebook className="w-4 h-4" />
+                          </motion.a>
+                        )}
+                        {member.social?.email && (
+                          <motion.a
+                            href={`mailto:${member.social.email}`}
+                            whileHover={{ scale: 1.1, y: -2 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-all"
+                          >
+                            <Mail className="w-4 h-4" />
+                          </motion.a>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
             </div>
           </motion.div>
         </div>
