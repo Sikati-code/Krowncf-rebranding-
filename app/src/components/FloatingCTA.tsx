@@ -80,7 +80,7 @@ export default function FloatingCTA() {
           <>
             {/* Logo Header */}
             <div className="flex items-center gap-3 mb-6">
-              <img src="/assets/logo.png" alt="Krown" className="w-10 h-10" />
+              <img src="/assets/KCF Logo Rebrand Main.jpg" alt="Krown" className="w-10 h-10" />
               <div>
                 <div className="text-sm font-bold text-white">Need Branding?</div>
                 <div className="text-xs text-white/50">Let's Work Together</div>

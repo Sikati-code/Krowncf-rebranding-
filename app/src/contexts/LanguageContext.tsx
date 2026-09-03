@@ -136,7 +136,11 @@ const translations = {
     'about.team': 'Meet Our',
     'about.teamSub': 'Creative Team',
     'about.teamDesc': 'The talented minds behind Krown Creative Factory',
+    'about.team.title': 'Meet Our Team',
+    'about.team.subtitle': 'The creative minds behind Krown Creative Factory',
     'about.founder': 'Founder',
+    'about.team.founder': 'Founder & Creative Director',
+    'about.team.co_founder': 'Co-Founder & Tech Lead',
     'about.subtitle': 'Learn more about our journey and mission.',
   },
   fr: {
@@ -261,7 +265,11 @@ const translations = {
     'about.team': 'Rencontrez Notre',
     'about.teamSub': 'Équipe Créative',
     'about.teamDesc': 'Les esprits talentueux derrière Krown Creative Factory',
+    'about.team.title': 'Rencontrez Notre Équipe',
+    'about.team.subtitle': 'Les esprits créatifs derrière Krown Creative Factory',
     'about.founder': 'Fondateur',
+    'about.team.founder': 'Fondateur et Directeur Créatif',
+    'about.team.co_founder': 'Co-Fondateur et Tech Lead',
     'about.subtitle': 'En savoir plus sur notre parcours et notre mission.',
   },
 };

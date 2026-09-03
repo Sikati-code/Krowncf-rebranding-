@@ -25,10 +25,10 @@ const quickLinks = [
 ];
 
 const socialLinks = [
-  { name: 'Instagram', icon: Instagram, href: '#' },
+  { name: 'Instagram', icon: Instagram, href: 'https://www.instagram.com/krowncf?igsi=MWVjc3prZmN4YmRs' },
   { name: 'Twitter', icon: Twitter, href: '#' },
-  { name: 'Facebook', icon: Facebook, href: '#' },
-  { name: 'YouTube', icon: Youtube, href: '#' },
+  { name: 'Facebook', icon: Facebook, href: 'https://www.facebook.com/krownartwork/' },
+  { name: 'YouTube', icon: Youtube, href: 'https://youtube.com/@krowncf?si=A7rR-99p1Cubke_e' },
 ];
 
 export default function Footer() {
@@ -167,6 +167,8 @@ export default function Footer() {
                   <motion.a
                     key={social.name}
                     href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-krown-red hover:border-krown-red/30 transition-all duration-300"
                     aria-label={social.name}
                     initial={{ opacity: 0, scale: 0.8 }}

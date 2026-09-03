@@ -11,6 +11,7 @@ import {
   ChevronDown
 } from 'lucide-react';
 import LoginModal from './LoginModal';
+import SearchModal from './SearchModal';
 import Cart from './Cart';
 import LanguageToggle from './LanguageToggle';
 import { useCart } from '../contexts/CartContext';
@@ -31,6 +32,7 @@ export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isContactDropdownOpen, setIsContactDropdownOpen] = useState(false);
   const { cartItems, cartCount, removeFromCart, updateQuantity } = useCart();
@@ -74,12 +76,12 @@ export default function Header() {
             {/* Logo */}
             <Link
               to="/"
-              className="flex items-center group"
+              className="flex items-center group flex-shrink-0"
             >
               <img
                 src="/assets/logo.png"
                 alt="Krown Logo"
-                className="w-[300px] h-[200px] sm:w-[400px] sm:h-[250px] object-contain scale-125"
+                className="h-16 sm:h-20 md:h-24 lg:h-28 w-auto max-h-full object-contain origin-left scale-110 sm:scale-125"
               />
             </Link>
 
@@ -129,14 +131,26 @@ export default function Header() {
                   <input
                     type="text"
                     placeholder="Search..."
-                    className="w-48 lg:w-56 xl:w-64 h-9 pl-4 pr-10 bg-white/5 border border-white/10 rounded-full text-sm text-white placeholder:text-white/40 focus:outline-none focus:border-krown-orange/50 focus:bg-white/10 transition-all duration-300"
+                    onClick={() => setIsSearchModalOpen(true)}
+                    readOnly
+                    className="w-48 lg:w-56 xl:w-64 h-9 pl-4 pr-10 bg-white/5 border border-white/10 rounded-full text-sm text-white placeholder:text-white/40 focus:outline-none focus:border-krown-orange/50 focus:bg-white/10 transition-all duration-300 cursor-pointer"
                   />
                   <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
                 </div>
               </div>
 
-              {/* Language Toggle - Desktop */}
-              <div className="hidden sm:block">
+              {/* Search - Mobile (Always Visible) */}
+              <motion.button
+                onClick={() => setIsSearchModalOpen(true)}
+                className="md:hidden p-2 text-white/70 hover:text-white transition-colors"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                <Search className="w-5 h-5" />
+              </motion.button>
+
+              {/* Language Toggle - Desktop/Mobile (Always Visible) */}
+              <div className="block">
                 <LanguageToggle />
               </div>
 
@@ -245,9 +259,17 @@ export default function Header() {
                 <input
                   type="text"
                   placeholder="Search designs, templates..."
-                  className="w-full h-10 pl-4 pr-10 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder:text-white/40 focus:outline-none focus:border-krown-orange/50"
+                  onClick={() => { setIsMobileMenuOpen(false); setIsSearchModalOpen(true); }}
+                  readOnly
+                  className="w-full h-10 pl-4 pr-10 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder:text-white/40 focus:outline-none focus:border-krown-orange/50 cursor-pointer"
                 />
                 <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+              </div>
+
+              {/* Mobile Language Toggle */}
+              <div className="mb-6 flex items-center justify-between">
+                <span className="text-white/70 text-sm font-medium">Language</span>
+                <LanguageToggle />
               </div>
 
               <div className="flex flex-col gap-1">
@@ -292,6 +314,9 @@ export default function Header() {
 
       {/* Login Modal */}
       <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
+
+      {/* Search Modal */}
+      <SearchModal isOpen={isSearchModalOpen} onClose={() => setIsSearchModalOpen(false)} />
 
       {/* Cart */}
       <Cart
