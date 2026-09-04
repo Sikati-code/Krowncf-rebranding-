@@ -174,9 +174,9 @@ export default function About() {
                       className="w-32 h-32 sm:w-40 sm:h-40 rounded-3xl bg-gradient-to-br from-krown-red to-krown-red-dark flex items-center justify-center"
                     >
                       <img
-                        src="/assets/logo.png"
+                        src="/assets/KCF Logo Rebrand Main.jpg"
                         alt="Krown Logo"
-                        className="w-16 h-16 sm:w-20 sm:h-20"
+                        className="w-full h-full object-contain"
                       />
                     </motion.div>
                   </div>

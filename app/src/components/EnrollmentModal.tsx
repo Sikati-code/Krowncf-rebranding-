@@ -14,6 +14,18 @@ interface EnrollmentModalProps {
 
 export default function EnrollmentModal({ isOpen, onClose, course }: EnrollmentModalProps) {
     const [selectedPlan, setSelectedPlan] = useState<'full' | 'material'>('full');
+    const [isProcessing, setIsProcessing] = useState(false);
+
+    const handleProceed = () => {
+        setIsProcessing(true);
+        // Simulate processing
+        setTimeout(() => {
+            setIsProcessing(false);
+            onClose();
+            // Here you would typically redirect to payment or show success
+            alert(`Selected plan: ${selectedPlan === 'full' ? 'Full Course' : 'Materials Only'}\nProceeding to payment...`);
+        }, 1000);
+    };
 
     if (!course) return null;
 
@@ -35,7 +47,7 @@ export default function EnrollmentModal({ isOpen, onClose, course }: EnrollmentM
                         initial={{ opacity: 0, scale: 0.95, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                        className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg z-50 px-4"
+                        className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl z-50 px-4"
                     >
                         <div className={`relative overflow-hidden rounded-2xl glass-card border-white/10`}>
                             {/* Header */}
@@ -53,65 +65,77 @@ export default function EnrollmentModal({ isOpen, onClose, course }: EnrollmentM
                             </div>
 
                             {/* Body */}
-                            <div className="p-6 space-y-4 bg-krown-dark/80">
-                                {/* Full Course Option */}
-                                <div
-                                    onClick={() => setSelectedPlan('full')}
-                                    className={`relative p-5 rounded-xl border-2 cursor-pointer transition-all duration-300 ${selectedPlan === 'full'
-                                        ? 'border-krown-orange bg-krown-orange/10 shadow-[0_0_20px_rgba(232,93,4,0.15)]'
-                                        : 'border-white/5 hover:border-white/20 bg-white/5'
-                                        }`}
-                                >
-                                    <div className="flex justify-between items-start mb-2">
-                                        <div className="flex items-center gap-2">
-                                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedPlan === 'full' ? 'border-krown-orange' : 'border-white/30'
-                                                }`}>
-                                                {selectedPlan === 'full' && <div className="w-2.5 h-2.5 rounded-full bg-krown-orange" />}
+                            <div className="p-6 bg-krown-dark/80">
+                                <div className="grid md:grid-cols-2 gap-4">
+                                    {/* Full Course Option */}
+                                    <div
+                                        onClick={() => setSelectedPlan('full')}
+                                        className={`relative p-5 rounded-xl border-2 cursor-pointer transition-all duration-300 hover:scale-[1.02] ${selectedPlan === 'full'
+                                            ? 'border-krown-orange bg-krown-orange/10 shadow-[0_0_20px_rgba(232,93,4,0.15)]'
+                                            : 'border-white/5 hover:border-white/30 bg-white/5'
+                                            }`}
+                                    >
+                                        {selectedPlan === 'full' && (
+                                            <div className="absolute -top-2 -right-2 bg-krown-orange text-white text-xs font-bold px-2 py-1 rounded-full">
+                                                Selected
                                             </div>
-                                            <h4 className="font-bold text-white">Full Course</h4>
+                                        )}
+                                        <div className="flex justify-between items-start mb-2">
+                                            <div className="flex items-center gap-2">
+                                                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${selectedPlan === 'full' ? 'border-krown-orange bg-krown-orange' : 'border-white/30'
+                                                    }`}>
+                                                    {selectedPlan === 'full' && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
+                                                </div>
+                                                <h4 className="font-bold text-white">Full Course</h4>
+                                            </div>
+                                            <span className="font-bold text-krown-orange">{course.price}</span>
                                         </div>
-                                        <span className="font-bold text-krown-orange">{course.price}</span>
+                                        <p className="text-sm text-white/50 ml-8 mb-3">Live sessions, mentorship, and complete access to all materials and tools.</p>
+                                        <div className="ml-8 space-y-1.5">
+                                            <div className="flex items-center gap-1.5">
+                                                <CheckCircle2 className="w-3.5 h-3.5 text-krown-orange flex-shrink-0" />
+                                                <span className="text-xs text-white/60">Live Interactive Training</span>
+                                            </div>
+                                            <div className="flex items-center gap-1.5">
+                                                <CheckCircle2 className="w-3.5 h-3.5 text-krown-orange flex-shrink-0" />
+                                                <span className="text-xs text-white/60">All Study Materials & Assets</span>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <p className="text-sm text-white/50 ml-7 mb-3">Live sessions, mentorship, and complete access to all materials and tools.</p>
-                                    <div className="ml-7 space-y-1.5">
-                                        <div className="flex items-center gap-1.5">
-                                            <CheckCircle2 className="w-3.5 h-3.5 text-krown-orange flex-shrink-0" />
-                                            <span className="text-xs text-white/60">Live Interactive Training</span>
-                                        </div>
-                                        <div className="flex items-center gap-1.5">
-                                            <CheckCircle2 className="w-3.5 h-3.5 text-krown-orange flex-shrink-0" />
-                                            <span className="text-xs text-white/60">All Study Materials & Assets</span>
-                                        </div>
-                                    </div>
-                                </div>
 
-                                {/* Materials Only Option */}
-                                <div
-                                    onClick={() => setSelectedPlan('material')}
-                                    className={`relative p-5 rounded-xl border-2 cursor-pointer transition-all duration-300 ${selectedPlan === 'material'
-                                        ? 'border-krown-orange bg-krown-orange/10 shadow-[0_0_20px_rgba(232,93,4,0.15)]'
-                                        : 'border-white/5 hover:border-white/20 bg-white/5'
-                                        }`}
-                                >
-                                    <div className="flex justify-between items-start mb-2">
-                                        <div className="flex items-center gap-2">
-                                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedPlan === 'material' ? 'border-krown-orange' : 'border-white/30'
-                                                }`}>
-                                                {selectedPlan === 'material' && <div className="w-2.5 h-2.5 rounded-full bg-krown-orange" />}
+                                    {/* Materials Only Option */}
+                                    <div
+                                        onClick={() => setSelectedPlan('material')}
+                                        className={`relative p-5 rounded-xl border-2 cursor-pointer transition-all duration-300 hover:scale-[1.02] ${selectedPlan === 'material'
+                                            ? 'border-krown-orange bg-krown-orange/10 shadow-[0_0_20px_rgba(232,93,4,0.15)]'
+                                            : 'border-white/5 hover:border-white/30 bg-white/5'
+                                            }`}
+                                    >
+                                        {selectedPlan === 'material' && (
+                                            <div className="absolute -top-2 -right-2 bg-krown-orange text-white text-xs font-bold px-2 py-1 rounded-full">
+                                                Selected
                                             </div>
-                                            <h4 className="font-bold text-white">Materials Only</h4>
+                                        )}
+                                        <div className="flex justify-between items-start mb-2">
+                                            <div className="flex items-center gap-2">
+                                                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${selectedPlan === 'material' ? 'border-krown-orange bg-krown-orange' : 'border-white/30'
+                                                    }`}>
+                                                    {selectedPlan === 'material' && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
+                                                </div>
+                                                <h4 className="font-bold text-white">Materials Only</h4>
+                                            </div>
+                                            <span className="font-bold text-yellow-500">₦50,000</span>
                                         </div>
-                                        <span className="font-bold text-yellow-500">₦50,000</span>
-                                    </div>
-                                    <p className="text-sm text-white/50 ml-7 mb-3">Self-paced learning with complete access to notes, templates, and video guides.</p>
-                                    <div className="ml-7 space-y-1.5">
-                                        <div className="flex items-center gap-1.5">
-                                            <CheckCircle2 className="w-3.5 h-3.5 text-yellow-500 flex-shrink-0" />
-                                            <span className="text-xs text-white/60">All Study Materials & Assets</span>
-                                        </div>
-                                        <div className="flex items-center gap-1.5 opacity-40">
-                                            <X className="w-3.5 h-3.5 flex-shrink-0" />
-                                            <span className="text-xs text-white/60 line-through">Live Interactive Training</span>
+                                        <p className="text-sm text-white/50 ml-8 mb-3">Self-paced learning with complete access to notes, templates, and video guides.</p>
+                                        <div className="ml-8 space-y-1.5">
+                                            <div className="flex items-center gap-1.5">
+                                                <CheckCircle2 className="w-3.5 h-3.5 text-yellow-500 flex-shrink-0" />
+                                                <span className="text-xs text-white/60">All Study Materials & Assets</span>
+                                            </div>
+                                            <div className="flex items-center gap-1.5 opacity-40">
+                                                <X className="w-3.5 h-3.5 flex-shrink-0" />
+                                                <span className="text-xs text-white/60 line-through">Live Interactive Training</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -119,9 +143,22 @@ export default function EnrollmentModal({ isOpen, onClose, course }: EnrollmentM
 
                             {/* Footer Actions */}
                             <div className="p-6 border-t border-white/5 bg-krown-black/50">
-                                <button className="w-full py-3.5 bg-gradient-to-r from-krown-red to-krown-red-dark text-white font-medium rounded-xl hover:shadow-glow transition-all duration-300 flex items-center justify-center gap-2 group">
-                                    Proceed to Payment
-                                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                <button 
+                                    onClick={handleProceed}
+                                    disabled={isProcessing}
+                                    className="w-full py-3.5 bg-gradient-to-r from-krown-red to-krown-red-dark text-white font-medium rounded-xl hover:shadow-glow transition-all duration-300 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {isProcessing ? (
+                                        <>
+                                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                            Processing...
+                                        </>
+                                    ) : (
+                                        <>
+                                            Proceed to Payment
+                                            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                        </>
+                                    )}
                                 </button>
                             </div>
                         </div>
