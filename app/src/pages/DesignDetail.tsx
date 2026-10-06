@@ -1,14 +1,27 @@
 import { useParams, Link } from 'react-router';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { categories } from '../data/categories';
 import { logos } from '../data/logos';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Star, Download, TrendingUp, Sparkles, ArrowLeft } from 'lucide-react';
+import DownloadButton from '../components/DownloadButton';
+import UpgradeModal from '../components/UpgradeModal';
+import WhatsAppShareButton from '../components/WhatsAppShareButton';
+import WhatsAppShareSheet from '../components/WhatsAppShareSheet';
+import WhatsAppIcon from '../components/icons/WhatsAppIcon';
+import { useShareItems, useShareCount } from '../hooks/use-share-items';
+import { useDocumentMeta } from '../hooks/use-document-meta';
+import { findShareable, ogFor } from '../lib/og';
 
 export default function DesignDetail() {
   const { id } = useParams();
-  const { language } = useLanguage();
-  const [showUpgrade, setShowUpgrade] = useState(false);
+  const { language, t } = useLanguage();
+  const [upgradeReason, setUpgradeReason] = useState<string | null>(null);
+  const closeUpgrade = useCallback(() => setUpgradeReason(null), []);
+  const share = useShareItems();
+  const shareable = findShareable(id || '', language);
+  const shareCount = useShareCount(shareable?.trackId ?? '');
+  useDocumentMeta(ogFor(id || '', language));
   
   // First try to find in categories
   const design = categories
@@ -106,16 +119,26 @@ export default function DesignDetail() {
                 )}
               </div>
               
-              {!isPortfolioLogo && (
+              {(!isPortfolioLogo || shareCount > 0) && (
                 <div className="flex flex-wrap gap-4 text-sm text-white/60 mb-6">
-                  <span className="flex items-center gap-1">
-                    <Download className="w-4 h-4" />
-                    {item.downloads} {language === 'fr' ? 'téléchargements' : 'downloads'}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                    {item.rating} / 5.0
-                  </span>
+                  {!isPortfolioLogo && (
+                    <>
+                      <span className="flex items-center gap-1">
+                        <Download className="w-4 h-4" />
+                        {item.downloads} {language === 'fr' ? 'téléchargements' : 'downloads'}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                        {item.rating} / 5.0
+                      </span>
+                    </>
+                  )}
+                  {shareCount > 0 && (
+                    <span className="flex items-center gap-1 text-[#25D366]/80">
+                      <WhatsAppIcon className="w-4 h-4" />
+                      {shareCount === 1 ? t('share.countOne') : t('share.count').replace('{count}', String(shareCount))}
+                    </span>
+                  )}
                 </div>
               )}
               
@@ -131,17 +154,18 @@ export default function DesignDetail() {
                 </div>
               </div>
               
-              {/* Download Button - Only for category designs, not portfolio logos */}
-              {!isPortfolioLogo && (
-                <button
-                  onClick={() => setShowUpgrade(true)}
-                  className="w-full py-4 bg-gradient-to-r from-krown-red to-krown-orange text-white font-bold rounded-xl hover:scale-105 transition-transform flex items-center justify-center gap-2 mb-6"
-                >
-                  <Download className="w-5 h-5" />
-                  {language === 'fr' ? 'Télécharger' : 'Download'}
-                </button>
-              )}
-              
+              {/* Download (category designs only) + WhatsApp share (every design) */}
+              {shareable && (() => {
+                const shareButton = (
+                  <WhatsAppShareButton label={t('share.button')} onClick={() => share.shareDesign(shareable)} />
+                );
+                return design ? (
+                  <DownloadButton design={design} onUpgrade={setUpgradeReason} secondaryAction={shareButton} />
+                ) : (
+                  <div className="mb-6">{shareButton}</div>
+                );
+              })()}
+
               {/* Tags */}
               <div className="flex flex-wrap gap-2">
                 <span className="bg-white/5 px-3 py-1 rounded-full text-sm text-white/60">
@@ -232,88 +256,14 @@ export default function DesignDetail() {
         </div>
       </div>
       
+      <WhatsAppShareSheet item={share.item} onClose={share.close} />
+
       {/* Upgrade Modal */}
-      {showUpgrade && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-          <div className="bg-gradient-to-b from-krown-dark to-krown-black p-8 rounded-2xl max-w-md w-full border border-white/10 max-h-[90vh] overflow-y-auto">
-            <h2 className="text-2xl font-bold text-white mb-2">
-              {language === 'fr' ? '🚀 Passer à Pro' : '🚀 Upgrade to Pro'}
-            </h2>
-            <p className="text-white/80 mb-6">
-              {language === 'fr' ? 'Connectez-vous pour télécharger des designs.' : 'Sign in to download designs.'}
-            </p>
-            
-            <div className="space-y-4">
-              {/* Free Tier */}
-              <div className="bg-white/5 p-4 rounded-xl border border-white/10">
-                <h3 className="font-bold text-white">
-                  {language === 'fr' ? 'Plan Gratuit' : 'Free Plan'}
-                </h3>
-                <p className="text-white/60 text-sm">
-                  {language === 'fr' ? '12 téléchargements gratuits' : '12 free downloads'}
-                </p>
-                <p className="text-lg font-bold text-white">
-                  {language === 'fr' ? 'Gratuit' : 'Free'}
-                </p>
-                <p className="text-xs text-white/40 mt-2">
-                  ✅ {language === 'fr' ? '12 téléchargements inclus' : '12 downloads included'}
-                </p>
-              </div>
-
-              {/* Pro Plan */}
-              <div className="bg-white/5 p-4 rounded-xl border border-krown-red/30 relative overflow-hidden">
-                <div className="absolute top-0 right-0 bg-krown-red px-3 py-1 text-xs font-bold rounded-bl-lg text-white">
-                  POPULAR
-                </div>
-                <h3 className="font-bold text-white">
-                  {language === 'fr' ? 'Plan Pro' : 'Pro Plan'}
-                </h3>
-                <p className="text-white/60 text-sm">
-                  {language === 'fr' ? 'Téléchargements illimités' : 'Unlimited downloads'}
-                </p>
-                <p className="text-2xl font-bold text-krown-red">₦5,000/month</p>
-                <p className="text-xs text-white/40 mt-2">
-                  ✅ {language === 'fr' ? 'Téléchargements illimités' : 'Unlimited downloads'}
-                </p>
-                <p className="text-xs text-white/40">
-                  ✅ {language === 'fr' ? 'Tous les designs débloqués' : 'All designs unlocked'}
-                </p>
-              </div>
-
-              {/* Advanced Plan */}
-              <div className="bg-white/5 p-4 rounded-xl border border-krown-orange/30">
-                <h3 className="font-bold text-white">
-                  {language === 'fr' ? 'Plan Avancé' : 'Advanced Plan'}
-                </h3>
-                <p className="text-white/60 text-sm">
-                  {language === 'fr' ? 'Illimité + accès prioritaire' : 'Unlimited + priority access'}
-                </p>
-                <p className="text-2xl font-bold text-krown-orange">₦10,000/month</p>
-                <p className="text-xs text-white/40 mt-2">
-                  ✅ {language === 'fr' ? 'Téléchargements illimités' : 'Unlimited downloads'}
-                </p>
-                <p className="text-xs text-white/40">
-                  ✅ {language === 'fr' ? 'Tous les designs débloqués' : 'All designs unlocked'}
-                </p>
-                <p className="text-xs text-white/40">
-                  ✅ {language === 'fr' ? 'Support prioritaire' : 'Priority support'}
-                </p>
-              </div>
-            </div>
-
-            <button className="w-full mt-6 py-3 bg-gradient-to-r from-krown-red to-krown-orange rounded-xl font-bold text-white hover:scale-105 transition-transform">
-              {language === 'fr' ? 'Passer à Pro' : 'Upgrade Now'}
-            </button>
-
-            <button 
-              onClick={() => setShowUpgrade(false)}
-              className="w-full mt-2 py-2 text-white/60 hover:text-white transition-colors"
-            >
-              {language === 'fr' ? 'Peut-être plus tard' : 'Maybe later'}
-            </button>
-          </div>
-        </div>
-      )}
+      <UpgradeModal
+        open={upgradeReason !== null}
+        onClose={closeUpgrade}
+        reason={upgradeReason ?? ''}
+      />
     </div>
   );
 }

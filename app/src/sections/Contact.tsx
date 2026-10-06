@@ -40,7 +40,7 @@ export default function Contact() {
     { id: 1, text: t('contact.chat.greeting'), isBot: true }
   ]);
   const [chatInput, setChatInput] = useState('');
-  
+
   // Form validation state
   const [formData, setFormData] = useState({
     fullName: '',
@@ -98,13 +98,13 @@ export default function Contact() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
 
     setIsSubmitting(true);
-    
+
     // Simulate form submission
     setTimeout(() => {
       setIsSubmitting(false);
@@ -116,7 +116,7 @@ export default function Contact() {
         subject: '',
         message: ''
       });
-      
+
       // Reset success message after 5 seconds
       setTimeout(() => {
         setSubmitSuccess(false);
@@ -149,7 +149,7 @@ export default function Contact() {
   return (
     <section id="contact" className="relative py-20 sm:py-28 lg:py-32 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-krown-black via-krown-dark/50 to-krown-black" />
-      
+
       {/* Animated Gradient Background */}
       <div className="absolute inset-0">
         <motion.div
@@ -172,7 +172,7 @@ export default function Contact() {
       {/* Background Elements */}
       <div className="absolute top-1/4 left-0 w-96 h-96 bg-krown-red/5 rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute bottom-1/4 right-0 w-80 h-80 bg-krown-red/3 rounded-full blur-[120px] pointer-events-none" />
-      
+
       <div className="relative z-10 w-full px-4 sm:px-6 lg:px-12 xl:px-20">
         <div className="max-w-7xl mx-auto" ref={ref}>
           {/* Hero Section */}
@@ -420,18 +420,18 @@ export default function Contact() {
                   >
                     {/* Background Glow Effect */}
                     <div className={`absolute inset-0 bg-gradient-to-br ${method.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
-                    
+
                     {/* Icon Container */}
                     <div className={`relative w-16 h-16 mx-auto mb-6 rounded-2xl bg-gradient-to-br ${method.color} flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg`}>
                       <method.icon className="w-8 h-8 text-white" />
                     </div>
-                    
+
                     {/* Text Content */}
                     <div className="relative text-center">
                       <h4 className="text-xl font-bold text-white mb-2">{method.label}</h4>
                       <p className="text-base text-white/80 font-medium">{method.value}</p>
                     </div>
-                    
+
                     {/* Hover Indicator */}
                     <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-white/20 to-transparent transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
                   </motion.a>
@@ -526,11 +526,10 @@ export default function Contact() {
                   animate={{ opacity: 1, y: 0 }}
                   className={`flex ${message.isBot ? 'justify-start' : 'justify-end'}`}
                 >
-                  <div className={`max-w-[80%] px-4 py-2 rounded-2xl ${
-                    message.isBot
+                  <div className={`max-w-[80%] px-4 py-2 rounded-2xl ${message.isBot
                       ? 'bg-white/10 text-white'
                       : 'bg-gradient-to-r from-krown-red to-krown-red-dark text-white'
-                  }`}>
+                    }`}>
                     <p className="text-sm">{message.text}</p>
                   </div>
                 </motion.div>

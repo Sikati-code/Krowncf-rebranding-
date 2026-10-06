@@ -1,6 +1,9 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Mail, Lock, Crown } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
+import { useUser } from '../contexts/UserContext';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -11,24 +14,27 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const { signIn } = useUser();
+  const { t } = useLanguage();
+
+  const completeSignIn = (signInEmail: string) => {
+    signIn(signInEmail);
+    setIsLoading(false);
+    onClose();
+    toast.success(t('download.signedIn'));
+  };
 
   const handleGoogleLogin = () => {
     setIsLoading(true);
     // Simulate Google auth
-    setTimeout(() => {
-      setIsLoading(false);
-      onClose();
-    }, 1500);
+    setTimeout(() => completeSignIn(email), 1500);
   };
 
   const handleEmailLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     // Simulate email login
-    setTimeout(() => {
-      setIsLoading(false);
-      onClose();
-    }, 1500);
+    setTimeout(() => completeSignIn(email), 1500);
   };
 
   return (

@@ -4,9 +4,14 @@ import { logos } from '../data/logos';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ArrowLeft, Sparkles, X, Send, Phone, Mail } from 'lucide-react';
 import { useState } from 'react';
+import { CardShareButton } from '../components/WhatsAppShareButton';
+import WhatsAppShareSheet from '../components/WhatsAppShareSheet';
+import { useShareItems } from '../hooks/use-share-items';
+import { findShareable } from '../lib/og';
 
 export default function AllDesigns() {
   const { language, t } = useLanguage();
+  const share = useShareItems();
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [formData, setFormData] = useState({
@@ -79,8 +84,9 @@ export default function AllDesigns() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: index * 0.05 }}
+                className="group relative"
               >
-                <Link to={`/design/${logo.id}`}>
+                <Link to={`/design/${logo.id}`} className="block">
                   <div className="glass-card rounded-2xl p-4 hover:scale-105 transition-transform cursor-pointer border border-white/10 hover:border-krown-red/30">
                     <div className="bg-white aspect-square flex items-center justify-center mb-3 rounded-xl">
                       <img 
@@ -93,6 +99,10 @@ export default function AllDesigns() {
                     <p className="text-xs text-white/60 truncate">{logo.industry}</p>
                   </div>
                 </Link>
+                <CardShareButton
+                  label={t('share.cardAria').replace('{title}', logo.name)}
+                  onClick={() => { const item = findShareable(String(logo.id), language); if (item) share.shareDesign(item); }}
+                />
               </motion.div>
             ))}
           </motion.div>
@@ -353,6 +363,7 @@ export default function AllDesigns() {
           </>
         )}
       </AnimatePresence>
+      <WhatsAppShareSheet item={share.item} onClose={share.close} />
     </div>
   );
 }

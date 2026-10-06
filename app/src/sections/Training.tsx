@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useInView } from 'framer-motion';
-import { useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import {
   GraduationCap,
   Palette,
@@ -15,68 +15,63 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import EnrollmentModal from '../components/EnrollmentModal';
+import WhatsAppShareButton from '../components/WhatsAppShareButton';
+import WhatsAppShareSheet from '../components/WhatsAppShareSheet';
+import { useShareItems } from '../hooks/use-share-items';
 
 const courses = [
   {
     id: 1,
     title: 'Font Creation',
-    description: 'Learn to design and build your own custom typefaces from sketch to final digital font files.',
     price: '₦150,000',
-    includes: 'Full Course (Material + Training)',
     icon: Type,
-    duration: '6 Weeks',
+    weeks: 6,
     students: '856',
     rating: 4.9,
-    features: ['Letterform Design', 'Vector Construction', 'Font Software', 'Export & Distribution'],
     gradient: 'from-blue-500/20 to-purple-500/20',
     iconColor: 'text-blue-400',
   },
   {
     id: 2,
     title: 'Professional Logo Creation',
-    description: 'Develop professional logo design skills from concept development to final presentation for clients.',
     price: '₦150,000',
-    includes: 'Full Course (Material + Training)',
     icon: Crown,
-    duration: '8 Weeks',
+    weeks: 8,
     students: '2,100',
     rating: 4.9,
-    features: ['Concept Development', 'Sketching Techniques', 'Vector Execution', 'Client Presentation'],
     gradient: 'from-green-500/20 to-emerald-500/20',
     iconColor: 'text-green-400',
   },
   {
     id: 3,
     title: 'Basics of Graphics Design',
-    description: 'Master the fundamental principles of graphic design including color theory, typography, layout, and composition.',
     price: '₦100,000',
-    includes: 'Full Course (Material + Training)',
     icon: Palette,
-    duration: '4 Weeks',
+    weeks: 4,
     students: '1,240',
     rating: 4.8,
-    features: ['Color Theory', 'Typography Basics', 'Layout Design', 'Composition Rules'],
     gradient: 'from-red-500/20 to-red-600/20',
     iconColor: 'text-red-400',
   },
   {
     id: 4,
     title: 'Brand Identity',
-    description: 'Comprehensive training on creating complete brand identity systems for businesses and organizations.',
     price: '₦100,000',
-    includes: 'Full Course (Material + Training)',
     icon: Fingerprint,
-    duration: '12 Weeks',
+    weeks: 12,
     students: '1,580',
     rating: 5.0,
-    features: ['Brand Strategy', 'Visual Systems', 'Brand Guidelines', 'Real Projects'],
     gradient: 'from-purple-500/20 to-pink-500/20',
     iconColor: 'text-purple-400',
   },
 ];
 
-function CourseCard({ course, index, onEnroll }: { course: typeof courses[0]; index: number; onEnroll: () => void }) {
+export type Course = typeof courses[0];
+
+function CourseCard({ course, index, onEnroll, onShare }: { course: Course; index: number; onEnroll: () => void; onShare: () => void }) {
   const [isHovered, setIsHovered] = useState(false);
+  const { t } = useLanguage();
+  const features = [1, 2, 3, 4].map((n) => t(`training.course.${course.id}.f${n}`));
 
   return (
     <motion.div
@@ -111,12 +106,12 @@ function CourseCard({ course, index, onEnroll }: { course: typeof courses[0]; in
             {course.title}
           </h3>
           <p className="text-sm text-white/50 mb-4 line-clamp-2">
-            {course.description}
+            {t(`training.course.${course.id}.desc`)}
           </p>
 
           {/* Features */}
           <div className="grid grid-cols-2 gap-2 mb-5">
-            {course.features.map((feature) => (
+            {features.map((feature) => (
               <div key={feature} className="flex items-center gap-1.5">
                 <CheckCircle2 className="w-3.5 h-3.5 text-krown-orange/70 flex-shrink-0" />
                 <span className="text-xs text-white/60">{feature}</span>
@@ -128,11 +123,11 @@ function CourseCard({ course, index, onEnroll }: { course: typeof courses[0]; in
           <div className="flex items-center gap-4 mb-5 text-xs text-white/40">
             <div className="flex items-center gap-1">
               <Clock className="w-3.5 h-3.5" />
-              <span>{course.duration}</span>
+              <span>{course.weeks} {t('training.weeks')}</span>
             </div>
             <div className="flex items-center gap-1">
               <Users className="w-3.5 h-3.5" />
-              <span>{course.students} students</span>
+              <span>{course.students} {t('training.students')}</span>
             </div>
           </div>
 
@@ -143,16 +138,24 @@ function CourseCard({ course, index, onEnroll }: { course: typeof courses[0]; in
                 {course.price}
               </span>
               <span className="text-[11px] font-medium text-white/50 bg-white/5 px-2 py-0.5 rounded-full inline-block">
-                {course.includes}
+                {t('training.includes')}
               </span>
             </div>
             <button
+              type="button"
               onClick={onEnroll}
-              className="flex items-center gap-1.5 px-4 py-2 bg-krown-orange text-white text-sm font-medium rounded-full hover:bg-krown-orange-dark transition-all duration-300 hover:shadow-glow group/btn"
+              aria-haspopup="dialog"
+              aria-label={t('training.enrollAria').replace('{course}', course.title)}
+              className="flex items-center gap-1.5 px-4 py-2 min-h-[44px] bg-krown-orange text-white text-sm font-medium rounded-full hover:bg-krown-orange-dark transition-all duration-300 hover:shadow-glow group/btn"
             >
-              Enroll Now
-              <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
+              {t('training.enroll')}
+              <ArrowRight aria-hidden="true" className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
             </button>
+          </div>
+
+          {/* Share */}
+          <div className="mt-4">
+            <WhatsAppShareButton variant="outline" size="md" label={t('share.courseButton')} onClick={onShare} />
           </div>
         </div>
       </div>
@@ -164,10 +167,13 @@ export default function Training() {
   const { t } = useLanguage();
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
-  const [selectedCourse, setSelectedCourse] = useState<typeof courses[0] | null>(null);
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleEnrollClick = (course: typeof courses[0]) => {
+  const closeModal = useCallback(() => setIsModalOpen(false), []);
+  const share = useShareItems();
+
+  const handleEnrollClick = (course: Course) => {
     setSelectedCourse(course);
     setIsModalOpen(true);
   };
@@ -201,7 +207,13 @@ export default function Training() {
           {/* Course Cards Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 lg:gap-6">
             {courses.map((course, index) => (
-              <CourseCard key={course.id} course={course} index={index} onEnroll={() => handleEnrollClick(course)} />
+              <CourseCard
+                key={course.id}
+                course={course}
+                index={index}
+                onEnroll={() => handleEnrollClick(course)}
+                onShare={() => share.shareCourse({ ...course, line: t(`training.course.${course.id}.desc`) })}
+              />
             ))}
           </div>
 
@@ -221,8 +233,8 @@ export default function Training() {
               }}
               className="inline-flex items-center gap-2 text-sm text-white/50 hover:text-krown-orange transition-colors duration-300"
             >
-              Need custom training for your team?
-              <span className="text-krown-orange hover:underline">Contact Us</span>
+              {t('training.customPrompt')}
+              <span className="text-krown-orange hover:underline">{t('training.customCta')}</span>
             </a>
           </motion.div>
         </div>
@@ -230,9 +242,11 @@ export default function Training() {
 
       <EnrollmentModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={closeModal}
         course={selectedCourse}
       />
+
+      <WhatsAppShareSheet item={share.item} onClose={share.close} />
     </section>
   );
 }

@@ -4,10 +4,15 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Star, Download, TrendingUp, Sparkles, Phone, Mail } from 'lucide-react';
 import { categories } from '../data/categories';
 import { useLanguage } from '../contexts/LanguageContext';
+import { CardShareButton } from '../components/WhatsAppShareButton';
+import WhatsAppShareSheet from '../components/WhatsAppShareSheet';
+import { useShareItems } from '../hooks/use-share-items';
+import { findShareable } from '../lib/og';
 
 export default function CategoryPage() {
   const { slug } = useParams();
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
+  const share = useShareItems();
   const category = categories.find(c => c.slug === slug);
 
   const [filter, setFilter] = useState('all');
@@ -124,13 +129,14 @@ export default function CategoryPage() {
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
           >
             {filteredDesigns.map((design, index) => (
-              <Link key={design.id} to={`/design/${design.id}`}>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: index * 0.05 }}
-                  className="glass-card rounded-xl overflow-hidden hover:scale-105 transition-transform cursor-pointer"
-                >
+              <motion.div
+                key={design.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: index * 0.05 }}
+                className="group relative glass-card rounded-xl overflow-hidden hover:scale-105 transition-transform"
+              >
+                <Link to={`/design/${design.id}`} className="block cursor-pointer">
                   <div className="design-image-wrapper light-bg aspect-[4/5] flex items-center justify-center p-4">
                     <img 
                       src={design.image} 
@@ -168,8 +174,12 @@ export default function CategoryPage() {
                     )}
                   </div>
                 </div>
-                </motion.div>
-              </Link>
+                </Link>
+                <CardShareButton
+                  label={t('share.cardAria').replace('{title}', language === 'fr' ? design.titleFr : design.title)}
+                  onClick={() => { const item = findShareable(design.id, language); if (item) share.shareDesign(item); }}
+                />
+              </motion.div>
             ))}
           </motion.div>
           
@@ -255,6 +265,7 @@ export default function CategoryPage() {
           </motion.div>
         </div>
       </div>
+      <WhatsAppShareSheet item={share.item} onClose={share.close} />
     </div>
   );
 }

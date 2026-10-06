@@ -2,11 +2,12 @@ import path from "path"
 import react from "@vitejs/plugin-react"
 import { defineConfig } from "vite"
 import { inspectAttr } from 'kimi-plugin-inspect-react'
+import ogPrerender from './og-prerender'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: './',
-  plugins: [inspectAttr(), react()],
+  base: '/',
+  plugins: [inspectAttr(), react(), ogPrerender()],
   server: {
     port: 3000,
   },
