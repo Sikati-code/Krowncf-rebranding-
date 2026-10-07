@@ -11,17 +11,15 @@ import {
   Send
 } from 'lucide-react';
 import { useState } from 'react';
+import { Link } from 'react-router';
 import { useLanguage } from '../contexts/LanguageContext';
+import { COMPANY_ITEMS, EXPLORE_ITEMS, navItem } from '../data/navigation';
+import { categories } from '../data/categories';
 
-const quickLinks = [
-  { name: 'Home', href: '/' },
-  { name: 'Categories', href: '#categories' },
-  { name: 'Podcast', href: '#podcasts' },
-  { name: 'Entertainment', href: '#entertainment' },
-  { name: 'Latest', href: '/latest' },
-  { name: 'About', href: '/about' },
-  { name: 'Contact Us', href: '/contact' },
-];
+const FOOTER_CATEGORY_SLUGS = ['festivities', 'church-flyers', 'birthday-designs', 'png', 'fonts', 'party-flyers'];
+const footerCategories = FOOTER_CATEGORY_SLUGS.map((slug) => categories.find((c) => c.slug === slug)).filter(
+  (c): c is (typeof categories)[number] => !!c,
+);
 
 const socialLinks = [
   { name: 'Instagram', icon: Instagram, href: 'https://www.instagram.com/krowncf?igsi=MWVjc3prZmN4YmRs' },
@@ -31,7 +29,7 @@ const socialLinks = [
 ];
 
 export default function Footer() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [email, setEmail] = useState('');
   const [isSubscribed, setIsSubscribed] = useState(false);
 
@@ -44,19 +42,10 @@ export default function Footer() {
     }
   };
 
-  const scrollToSection = (href: string) => {
-    if (href.startsWith('#')) {
-      // Scroll to section on current page
-      const element = document.querySelector(href);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
-    } else {
-      // Navigate to route
-      // eslint-disable-next-line react-hooks/immutability
-      window.location.href = href;
-    }
-  };
+  const linkGroups = [
+    { title: t('footer.explore'), items: [navItem('home'), ...EXPLORE_ITEMS] },
+    { title: t('footer.company'), items: COMPANY_ITEMS },
+  ];
 
   return (
     <footer id="contact" className="relative pt-20 sm:pt-28 lg:pt-32 pb-8">
@@ -125,7 +114,7 @@ export default function Footer() {
           </motion.div>
 
           {/* Main Footer Content */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 mb-12 sm:mb-16">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-10 mb-12 sm:mb-16">
             {/* Brand Column */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -192,41 +181,42 @@ export default function Footer() {
               </div>
             </motion.div>
 
-            {/* Quick Links */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-            >
-              <h4 className="text-sm font-semibold text-white mb-4 uppercase tracking-wider">
-                {t('footer.quickLinks')}
-              </h4>
-              <ul className="space-y-2.5">
-                {quickLinks.map((link, index) => (
-                  <li key={link.name}>
-                    <motion.a
-                      href={link.href}
-                      onClick={(e) => { e.preventDefault(); scrollToSection(link.href); }}
-                      className="text-sm text-white/40 hover:text-krown-red transition-colors duration-200 flex items-center gap-1.5 group"
+            {/* Explore / Company */}
+            {linkGroups.map((group, g) => (
+              <motion.div
+                key={group.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.1 + g * 0.05 }}
+              >
+                <h4 className="text-sm font-semibold text-white mb-4 uppercase tracking-wider">
+                  {group.title}
+                </h4>
+                <ul className="space-y-2.5">
+                  {group.items.map((item, index) => (
+                    <motion.li
+                      key={item.id}
                       initial={{ opacity: 0, x: -10 }}
                       whileInView={{ opacity: 1, x: 0 }}
                       viewport={{ once: true }}
                       transition={{ duration: 0.3, delay: 0.2 + index * 0.05 }}
                       whileHover={{ x: 5 }}
                     >
-                      <motion.span 
-                        className="w-3 h-3 opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all duration-200"
-                        whileHover={{ opacity: 1, x: 0 }}
+                      <Link
+                        to={item.to}
+                        className="text-sm text-white/40 hover:text-krown-red transition-colors duration-200 flex items-center gap-1.5 group"
                       >
-                        <ArrowRight />
-                      </motion.span>
-                      {link.name}
-                    </motion.a>
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
+                        <span className="w-3 h-3 opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all duration-200">
+                          <ArrowRight />
+                        </span>
+                        {t(item.labelKey)}
+                      </Link>
+                    </motion.li>
+                  ))}
+                </ul>
+              </motion.div>
+            ))}
 
             {/* Categories */}
             <motion.div
@@ -239,26 +229,25 @@ export default function Footer() {
                 {t('footer.categories')}
               </h4>
               <ul className="space-y-2.5">
-                {['Festivities', 'Church Flyers', 'Birthday Designs', 'PNGs', 'Fonts', 'Party Flyers'].map((cat, index) => (
-                  <li key={cat}>
-                    <motion.a
-                      href={`#${cat.toLowerCase().replace(/\s+/g, '-')}`}
+                {footerCategories.map((cat, index) => (
+                  <motion.li
+                    key={cat.slug}
+                    initial={{ opacity: 0, x: -10 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.3, delay: 0.3 + index * 0.05 }}
+                    whileHover={{ x: 5 }}
+                  >
+                    <Link
+                      to={`/categories/${cat.slug}`}
                       className="text-sm text-white/40 hover:text-krown-red transition-colors duration-200 flex items-center gap-1.5 group"
-                      initial={{ opacity: 0, x: -10 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.3, delay: 0.3 + index * 0.05 }}
-                      whileHover={{ x: 5 }}
                     >
-                      <motion.span 
-                        className="w-3 h-3 opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all duration-200"
-                        whileHover={{ opacity: 1, x: 0 }}
-                      >
+                      <span className="w-3 h-3 opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all duration-200">
                         <ArrowRight />
-                      </motion.span>
-                      {cat}
-                    </motion.a>
-                  </li>
+                      </span>
+                      {language === 'fr' ? cat.nameFr : cat.name}
+                    </Link>
+                  </motion.li>
                 ))}
               </ul>
             </motion.div>
@@ -271,7 +260,7 @@ export default function Footer() {
               transition={{ duration: 0.5, delay: 0.3 }}
             >
               <h4 className="text-sm font-semibold text-white mb-4 uppercase tracking-wider">
-                Our Office
+                {t('footer.ourOffice')}
               </h4>
               <ul className="space-y-3">
                 <motion.li
@@ -327,13 +316,12 @@ export default function Footer() {
                 <a href="#privacy" className="text-xs sm:text-sm text-white/30 hover:text-white/60 transition-colors">
                   {t('footer.privacy')}
                 </a>
-                <a 
-                  href="#contact" 
-                  onClick={(e) => { e.preventDefault(); scrollToSection('#contact'); }}
+                <Link
+                  to="/contact"
                   className="text-xs sm:text-sm text-white/30 hover:text-krown-orange transition-colors"
                 >
                   {t('footer.contact')}
-                </a>
+                </Link>
               </div>
             </div>
           </motion.div>

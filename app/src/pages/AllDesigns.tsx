@@ -2,12 +2,15 @@ import { Link } from 'react-router';
 import { motion, AnimatePresence } from 'framer-motion';
 import { logos } from '../data/logos';
 import { useLanguage } from '../contexts/LanguageContext';
-import { ArrowLeft, Sparkles, X, Send, Phone, Mail } from 'lucide-react';
+import { Sparkles, X, Send, Phone, Mail } from 'lucide-react';
 import { useState } from 'react';
 import { CardShareButton } from '../components/WhatsAppShareButton';
 import WhatsAppShareSheet from '../components/WhatsAppShareSheet';
 import { useShareItems } from '../hooks/use-share-items';
 import { findShareable } from '../lib/og';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
+import Breadcrumbs from '../components/Breadcrumbs';
 
 export default function AllDesigns() {
   const { language, t } = useLanguage();
@@ -49,17 +52,12 @@ export default function AllDesigns() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-krown-black via-krown-dark/50 to-krown-black">
-      <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20 pt-24 pb-12">
+      <Header />
+      <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20 pt-28 sm:pt-32 pb-12">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <Link 
-              to="/#portfolio"
-              className="inline-flex items-center gap-2 text-krown-red hover:text-krown-orange transition-colors mb-4"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              {language === 'fr' ? 'Retour' : 'Back'}
-            </Link>
+            <Breadcrumbs className="mb-4" items={[{ label: t('nav.allDesigns') }]} />
             <p className="mb-2 text-sm uppercase tracking-wider text-krown-red">{t('portfolio.title')}</p>
             <h1 className="text-4xl sm:text-5xl font-bold text-white mb-2">
               {language === 'fr' ? 'Tous les Designs' : 'All Designs'}
@@ -364,6 +362,7 @@ export default function AllDesigns() {
           </>
         )}
       </AnimatePresence>
+      <Footer />
       <WhatsAppShareSheet item={share.item} onClose={share.close} />
     </div>
   );

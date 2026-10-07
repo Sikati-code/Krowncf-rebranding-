@@ -12,6 +12,9 @@ import WhatsAppIcon from '../components/icons/WhatsAppIcon';
 import { useShareItems, useShareCount } from '../hooks/use-share-items';
 import { useDocumentMeta } from '../hooks/use-document-meta';
 import { findShareable, ogFor } from '../lib/og';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
+import Breadcrumbs from '../components/Breadcrumbs';
 
 export default function DesignDetail() {
   const { id } = useParams();
@@ -75,18 +78,19 @@ export default function DesignDetail() {
   
   return (
     <div className="min-h-screen bg-gradient-to-b from-krown-black via-krown-dark/50 to-krown-black">
-      <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20 pt-24 pb-12">
+      <Header />
+      <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20 pt-28 sm:pt-32 pb-12">
         <div className="max-w-7xl mx-auto">
           {/* Breadcrumb */}
-          <div className="text-sm text-white/60 mb-4">
-            <Link to="/" className="hover:text-krown-red transition-colors">Home</Link>
-            <span className="mx-2">/</span>
-            <Link to={`/#portfolio`} className="hover:text-krown-red transition-colors">
-              {language === 'fr' ? itemCategory.nameFr : itemCategory.name}
-            </Link>
-            <span className="mx-2">/</span>
-            <span className="text-white">{language === 'fr' ? item.titleFr : item.title}</span>
-          </div>
+          <Breadcrumbs
+            className="mb-4"
+            items={[
+              category
+                ? { label: language === 'fr' ? category.nameFr : category.name, to: `/categories/${category.slug}` }
+                : { label: language === 'fr' ? itemCategory.nameFr : itemCategory.name, to: '/designs/all' },
+              { label: language === 'fr' ? item.titleFr : item.title },
+            ]}
+          />
           
           {/* Main Content */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
@@ -260,6 +264,7 @@ export default function DesignDetail() {
         </div>
       </div>
       
+      <Footer />
       <WhatsAppShareSheet item={share.item} onClose={share.close} />
     </div>
   );

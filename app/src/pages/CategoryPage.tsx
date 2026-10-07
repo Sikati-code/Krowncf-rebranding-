@@ -8,6 +8,9 @@ import { CardShareButton } from '../components/WhatsAppShareButton';
 import WhatsAppShareSheet from '../components/WhatsAppShareSheet';
 import { useShareItems } from '../hooks/use-share-items';
 import { findShareable } from '../lib/og';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
+import Breadcrumbs from '../components/Breadcrumbs';
 
 export default function CategoryPage() {
   const { slug } = useParams();
@@ -21,9 +24,10 @@ export default function CategoryPage() {
   if (!category) {
     return (
       <div className="min-h-screen bg-krown-black flex items-center justify-center">
+        <Header />
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-white mb-4">Category not found</h1>
-          <a href="/#categories" className="text-krown-red hover:underline">Back to Categories</a>
+          <h1 className="text-2xl font-bold text-white mb-4">{language === 'fr' ? 'Catégorie introuvable' : 'Category not found'}</h1>
+          <Link to="/categories" className="text-krown-red hover:underline">{t('nav.categories')}</Link>
         </div>
       </div>
     );
@@ -46,16 +50,17 @@ export default function CategoryPage() {
   
   return (
     <div className="min-h-screen bg-gradient-to-b from-krown-black via-krown-dark/50 to-krown-black">
+      <Header />
       {/* Breadcrumb */}
-      <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20 pt-24 pb-8">
+      <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20 pt-28 sm:pt-32 pb-8">
         <div className="max-w-7xl mx-auto">
-          <div className="text-sm text-white/60 mb-4">
-            <a href="/" className="hover:text-krown-red transition-colors">Home</a>
-            <span className="mx-2">/</span>
-            <a href="/#categories" className="hover:text-krown-red transition-colors">Categories</a>
-            <span className="mx-2">/</span>
-            <span className="text-white">{language === 'fr' ? category.nameFr : category.name}</span>
-          </div>
+          <Breadcrumbs
+            className="mb-4"
+            items={[
+              { label: t('nav.categories'), to: '/categories' },
+              { label: language === 'fr' ? category.nameFr : category.name },
+            ]}
+          />
           
           {/* Category Header */}
           <motion.div
@@ -193,14 +198,14 @@ export default function CategoryPage() {
               {category.relatedCategories.map((relatedSlug) => {
                 const related = categories.find(c => c.slug === relatedSlug);
                 return related ? (
-                  <a
+                  <Link
                     key={related.id}
-                    href={`/categories/${related.slug}`}
+                    to={`/categories/${related.slug}`}
                     className="px-4 py-2 bg-white/10 rounded-lg hover:bg-white/20 transition-colors text-white flex items-center gap-2"
                   >
                     <span>{related.icon}</span>
                     {language === 'fr' ? related.nameFr : related.name}
-                  </a>
+                  </Link>
                 ) : null;
               })}
             </div>
@@ -213,13 +218,13 @@ export default function CategoryPage() {
             transition={{ duration: 0.6, delay: 0.4 }}
             className="mt-8"
           >
-            <a 
-              href="/#categories" 
+            <Link
+              to="/categories"
               className="inline-flex items-center gap-2 text-krown-red hover:text-krown-orange transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
               {language === 'fr' ? 'Retour aux Catégories' : 'Back to All Categories'}
-            </a>
+            </Link>
           </motion.div>
           
           {/* Contact Info Section */}
@@ -258,6 +263,7 @@ export default function CategoryPage() {
           </motion.div>
         </div>
       </div>
+      <Footer />
       <WhatsAppShareSheet item={share.item} onClose={share.close} />
     </div>
   );
