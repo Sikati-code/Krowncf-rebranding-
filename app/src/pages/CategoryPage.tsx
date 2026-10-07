@@ -41,8 +41,6 @@ export default function CategoryPage() {
     .sort((a, b) => {
       if (sort === 'newest') return b.id.localeCompare(a.id);
       if (sort === 'popular') return b.downloads - a.downloads;
-      if (sort === 'price-low') return parseInt(a.price.replace(/[^0-9]/g, '')) - parseInt(b.price.replace(/[^0-9]/g, ''));
-      if (sort === 'price-high') return parseInt(b.price.replace(/[^0-9]/g, '')) - parseInt(a.price.replace(/[^0-9]/g, ''));
       return 0;
     });
   
@@ -116,8 +114,6 @@ export default function CategoryPage() {
             >
               <option value="newest" className="bg-krown-dark">{language === 'fr' ? 'Plus récent' : 'Newest'}</option>
               <option value="popular" className="bg-krown-dark">{language === 'fr' ? 'Populaire' : 'Popular'}</option>
-              <option value="price-low" className="bg-krown-dark">{language === 'fr' ? 'Prix: Croissant' : 'Price: Low to High'}</option>
-              <option value="price-high" className="bg-krown-dark">{language === 'fr' ? 'Prix: Décroissant' : 'Price: High to Low'}</option>
             </select>
           </motion.div>
           
@@ -148,7 +144,6 @@ export default function CategoryPage() {
                   <h3 className="font-bold text-white mb-1">
                     {language === 'fr' ? design.titleFr : design.title}
                   </h3>
-                  <p className="text-krown-red font-bold mb-2">{design.price}</p>
                   <div className="flex justify-between text-sm text-white/60 mb-2">
                     <span className="flex items-center gap-1">
                       <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
@@ -178,6 +173,7 @@ export default function CategoryPage() {
                 <CardShareButton
                   label={t('share.cardAria').replace('{title}', language === 'fr' ? design.titleFr : design.title)}
                   onClick={() => { const item = findShareable(design.id, language); if (item) share.shareDesign(item); }}
+                  onPrepare={() => { const item = findShareable(design.id, language); if (item) share.prepare(item); }}
                 />
               </motion.div>
             ))}
@@ -242,7 +238,7 @@ export default function CategoryPage() {
                   <Phone className="w-4 h-4 text-krown-red" />
                   {language === 'fr' ? 'Appelez-nous' : 'Call Us'}
                 </p>
-                <a href="tel:+2348136804699" className="block text-white/60 hover:text-krown-red transition-colors mb-1">
+                <a href="tel:+2348136804699" className="block text-white/60 hover:text-krown-red transition-colors">
                   🇳🇬 +234 813 680 4699 (Nigeria)
                 </a>
                 <a href="tel:+237680200704" className="block text-white/60 hover:text-krown-red transition-colors">
@@ -254,11 +250,8 @@ export default function CategoryPage() {
                   <Mail className="w-4 h-4 text-krown-red" />
                   {language === 'fr' ? 'Envoyez-nous un email' : 'Email Us'}
                 </p>
-                <a href="mailto:Info@krowncf.com" className="block text-white/60 hover:text-krown-red transition-colors mb-1">
-                  Info@krowncf.com
-                </a>
-                <a href="mailto:krownassets@gmail.com" className="block text-white/60 hover:text-krown-red transition-colors">
-                  krownassets@gmail.com
+                <a href="mailto:info@krowncf.com" className="block text-white/60 hover:text-krown-red transition-colors">
+                  info@krowncf.com
                 </a>
               </div>
             </div>

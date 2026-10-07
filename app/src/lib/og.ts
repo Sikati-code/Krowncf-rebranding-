@@ -12,7 +12,10 @@ type Lang = 'en' | 'fr';
 export interface OgMeta {
   title: string;
   description: string;
+  /** Watermarked preview generated at build time (og-prerender) — never the clean file. */
   image: string;
+  /** Original design image, used only by the build step to make `image`. */
+  sourceImage: string;
   url: string;
 }
 
@@ -59,7 +62,8 @@ export function ogFor(id: string, lang: Lang = 'en'): OgMeta | null {
   return {
     title: `${item.title} | ${BRAND_NAME}`,
     description: `${item.line}. ${ATTRIBUTION[lang]}`,
-    image: absoluteUrl(item.image),
+    image: `${SITE_URL}/og/${encodeURIComponent(id)}.jpg`,
+    sourceImage: item.image,
     url: `${SITE_URL}/design/${encodeURIComponent(id)}`,
   };
 }

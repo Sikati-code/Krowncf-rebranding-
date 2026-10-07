@@ -73,11 +73,21 @@ export default function WhatsAppShareButton({
  * Compact round share action for design cards. Always visible on touch screens;
  * revealed on hover / keyboard focus on devices with a mouse.
  */
-export function CardShareButton({ label, onClick }: { label: string; onClick: () => void }) {
+export function CardShareButton({
+  label,
+  onClick,
+  onPrepare,
+}: {
+  label: string;
+  onClick: () => void;
+  /** Called on pointerdown so the watermarked image starts building before the click. */
+  onPrepare?: () => void;
+}) {
   return (
     <motion.button
       type="button"
       onClick={onClick}
+      onPointerDown={onPrepare}
       whileTap={{ scale: 0.88 }}
       aria-label={label}
       aria-haspopup="dialog"

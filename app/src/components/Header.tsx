@@ -38,7 +38,7 @@ export default function Header() {
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isContactDropdownOpen, setIsContactDropdownOpen] = useState(false);
-  const { cartItems, cartCount, removeFromCart, updateQuantity } = useCart();
+  const { cartItems, cartCount, removeFromCart } = useCart();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -185,13 +185,9 @@ export default function Header() {
                           <Phone className="w-4 h-4 text-krown-red" />
                           <span>🇨🇲 +237 680 20 07 04</span>
                         </a>
-                        <a href="mailto:Info@krowncf.com" className="flex items-center gap-3 text-sm text-white/60 hover:text-white transition-colors">
+                        <a href="mailto:info@krowncf.com" className="flex items-center gap-3 text-sm text-white/60 hover:text-white transition-colors">
                           <Mail className="w-4 h-4 text-krown-red" />
-                          <span>Info@krowncf.com</span>
-                        </a>
-                        <a href="mailto:krownassets@gmail.com" className="flex items-center gap-3 text-sm text-white/60 hover:text-white transition-colors">
-                          <Mail className="w-4 h-4 text-krown-red" />
-                          <span>krownassets@gmail.com</span>
+                          <span>info@krowncf.com</span>
                         </a>
                       </div>
                     </motion.div>
@@ -356,7 +352,6 @@ export default function Header() {
         onClose={() => setIsCartOpen(false)}
         items={cartItems}
         onRemoveItem={removeFromCart}
-        onUpdateQuantity={updateQuantity}
       />
     </>
   );

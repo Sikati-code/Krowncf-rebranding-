@@ -1,11 +1,11 @@
 import { useParams, Link } from 'react-router';
-import { useCallback, useState } from 'react';
+import { useEffect } from 'react';
 import { categories } from '../data/categories';
 import { logos } from '../data/logos';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Star, Download, TrendingUp, Sparkles, ArrowLeft } from 'lucide-react';
 import DownloadButton from '../components/DownloadButton';
-import PacksModal from '../components/PacksModal';
+import { useCheckout } from '../contexts/CheckoutContext';
 import WhatsAppShareButton from '../components/WhatsAppShareButton';
 import WhatsAppShareSheet from '../components/WhatsAppShareSheet';
 import WhatsAppIcon from '../components/icons/WhatsAppIcon';
@@ -16,12 +16,21 @@ import { findShareable, ogFor } from '../lib/og';
 export default function DesignDetail() {
   const { id } = useParams();
   const { language, t } = useLanguage();
-  const [upgradeReason, setUpgradeReason] = useState<string | null>(null);
-  const closeUpgrade = useCallback(() => setUpgradeReason(null), []);
+  const { openCheckout } = useCheckout();
   const share = useShareItems();
   const shareable = findShareable(id || '', language);
   const shareCount = useShareCount(shareable?.trackId ?? '');
   useDocumentMeta(ogFor(id || '', language));
+
+  // Build the watermarked share image once the page has settled, so a share tap is instant.
+  const { prepare } = share;
+  const shareImage = shareable?.image;
+  useEffect(() => {
+    if (!shareable || !shareImage) return;
+    const timer = window.setTimeout(() => prepare(shareable), 1200);
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once per design
+  }, [id, shareImage, prepare]);
   
   // First try to find in categories
   const design = categories
@@ -50,7 +59,6 @@ export default function DesignDetail() {
     title: logo?.name || '',
     titleFr: logo?.name || '',
     image: logo?.image || '',
-    price: '', // No price for portfolio logos
     downloads: 0,
     rating: 4.5,
     isTrending: false,
@@ -96,9 +104,6 @@ export default function DesignDetail() {
               <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
                 {language === 'fr' ? item.titleFr : item.title}
               </h1>
-              {!isPortfolioLogo && item.price && (
-                <p className="text-krown-red text-xl sm:text-2xl font-bold mb-4">{item.price}</p>
-              )}
               
               {isPortfolioLogo && logo && (
                 <p className="text-white/60 text-lg mb-4">{logo.industry}</p>
@@ -160,7 +165,7 @@ export default function DesignDetail() {
                   <WhatsAppShareButton label={t('share.button')} onClick={() => share.shareDesign(shareable)} />
                 );
                 return design ? (
-                  <DownloadButton design={design} onNeedCredits={setUpgradeReason} shareAction={shareButton} />
+                  <DownloadButton design={design} onNeedCredits={(reason, product) => openCheckout({ reason, product })} shareAction={shareButton} />
                 ) : (
                   <div className="mb-6">{shareButton}</div>
                 );
@@ -204,7 +209,6 @@ export default function DesignDetail() {
                         <p className="text-sm font-bold text-white truncate">
                           {language === 'fr' ? related.titleFr : related.title}
                         </p>
-                        <p className="text-xs text-krown-red">{related.price}</p>
                       </div>
                     </Link>
                   ))}
@@ -257,13 +261,6 @@ export default function DesignDetail() {
       </div>
       
       <WhatsAppShareSheet item={share.item} onClose={share.close} />
-
-      {/* Credit packs */}
-      <PacksModal
-        open={upgradeReason !== null}
-        onClose={closeUpgrade}
-        reason={upgradeReason ?? ''}
-      />
     </div>
   );
 }

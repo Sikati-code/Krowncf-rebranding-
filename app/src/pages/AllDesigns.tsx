@@ -102,6 +102,7 @@ export default function AllDesigns() {
                 <CardShareButton
                   label={t('share.cardAria').replace('{title}', logo.name)}
                   onClick={() => { const item = findShareable(String(logo.id), language); if (item) share.shareDesign(item); }}
+                  onPrepare={() => { const item = findShareable(String(logo.id), language); if (item) share.prepare(item); }}
                 />
               </motion.div>
             ))}
@@ -322,7 +323,7 @@ export default function AllDesigns() {
                     {/* Contact Info */}
                     <div className="mt-6 pt-4 border-t border-white/10">
                       <p className="text-xs text-white/50 mb-3 text-center">
-                        For branding inquiries, email us at krownassets@gmail.com
+                        For branding inquiries, email us at info@krowncf.com
                       </p>
                       <div className="flex gap-2">
                         <a
@@ -333,7 +334,7 @@ export default function AllDesigns() {
                           Call
                         </a>
                         <a
-                          href="mailto:krownassets@gmail.com"
+                          href="mailto:info@krowncf.com"
                           className="flex-1 flex items-center justify-center gap-2 py-2 text-xs text-white/60 hover:text-white hover:bg-white/5 rounded-lg transition-all"
                         >
                           <Mail className="w-3.5 h-3.5" />

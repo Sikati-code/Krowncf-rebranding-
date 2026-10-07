@@ -1,10 +1,10 @@
 import { Link } from 'react-router';
 import { ArrowRight } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
-import { CREDIT_PACKS, formatNaira } from '../data/pricing';
+import { CREDIT_PACKS, formatNaira, type CreditPack } from '../data/pricing';
 
 /** Compact pack pricing shown under the download buttons on design pages. */
-export default function PackStrip({ onSelect }: { onSelect: () => void }) {
+export default function PackStrip({ onSelect }: { onSelect: (pack: CreditPack['id']) => void }) {
   const { language, t } = useLanguage();
 
   return (
@@ -21,16 +21,22 @@ export default function PackStrip({ onSelect }: { onSelect: () => void }) {
           <button
             key={pack.id}
             type="button"
-            onClick={onSelect}
-            className="relative min-h-[64px] rounded-lg border border-white/10 bg-white/5 px-2 py-2 text-center hover:border-krown-orange/50 hover:bg-krown-orange/10 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-krown-orange"
+            onClick={() => onSelect(pack.id)}
+            className={`relative min-h-[64px] rounded-lg border px-2 py-2 text-center hover:border-krown-orange/50 hover:bg-krown-orange/10 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-krown-orange ${
+              pack.highlight ? 'border-krown-orange/60 bg-krown-orange/10 shadow-glow' : 'border-white/10 bg-white/5'
+            }`}
           >
             {pack.badge && (
-              <span className="absolute -top-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-krown-orange px-1.5 py-px text-[9px] font-bold text-white">
+              <span
+                className={`absolute -top-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full px-1.5 py-px text-[9px] font-bold text-white ${
+                  pack.highlight ? 'bg-gradient-to-r from-krown-red to-krown-orange' : 'bg-white/25'
+                }`}
+              >
                 {pack.badge[language]}
               </span>
             )}
             <span className="block text-[11px] text-white/60 leading-tight">{pack.name[language]}</span>
-            <span className="block text-sm font-bold text-white mt-0.5">{formatNaira(pack.price)}</span>
+            <span className="block text-sm font-bold text-white mt-0.5">{formatNaira(pack.ngn)}</span>
           </button>
         ))}
       </div>

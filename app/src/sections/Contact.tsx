@@ -7,8 +7,8 @@ const contactMethods = [
   {
     icon: Mail,
     label: 'Email',
-    value: 'Info@krowncf.com',
-    link: 'mailto:Info@krowncf.com',
+    value: 'info@krowncf.com',
+    link: 'mailto:info@krowncf.com',
     color: 'from-blue-500 to-blue-600',
     hoverColor: 'hover:border-blue-500/50'
   },
@@ -228,7 +228,7 @@ export default function Contact() {
               animate={isInView ? { opacity: 1, x: 0 } : {}}
               transition={{ duration: 0.8, delay: 0.4 }}
             >
-              <form onSubmit={handleSubmit} action="mailto:krownassets@gmail.com" method="post" encType="text/plain" className="space-y-6">
+              <form onSubmit={handleSubmit} action="mailto:info@krowncf.com" method="post" encType="text/plain" className="space-y-6">
                 {/* Success Message */}
                 <AnimatePresence>
                   {submitSuccess && (

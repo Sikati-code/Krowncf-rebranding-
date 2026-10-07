@@ -8,8 +8,6 @@ const latestItems = [
     id: 1,
     name: 'Modern Script Font Family',
     category: 'Fonts',
-    price: '₦35,000',
-    originalPrice: '₦50,000',
     rating: 4.8,
     reviews: 67,
     formats: ['OTF', 'TTF'],
@@ -20,8 +18,6 @@ const latestItems = [
     id: 2,
     name: 'African Pattern Collection',
     category: 'Vector Illustrations',
-    price: '₦22,000',
-    originalPrice: '₦30,000',
     rating: 4.8,
     reviews: 95,
     formats: ['AI', 'EPS'],
@@ -32,8 +28,6 @@ const latestItems = [
     id: 3,
     name: 'Birthday Party Invitation',
     category: 'Birthday Designs',
-    price: '₦10,000',
-    originalPrice: '₦18,000',
     rating: 4.7,
     reviews: 156,
     formats: ['PSD', 'AI'],
@@ -44,8 +38,6 @@ const latestItems = [
     id: 4,
     name: 'Night Club Party Flyer',
     category: 'Party Flyers',
-    price: '₦18,000',
-    originalPrice: null,
     rating: 4.6,
     reviews: 112,
     formats: ['PSD', 'AI'],
@@ -56,8 +48,6 @@ const latestItems = [
     id: 5,
     name: 'Sunday Service Church Flyer',
     category: 'Church Flyers',
-    price: '₦12,000',
-    originalPrice: null,
     rating: 4.9,
     reviews: 89,
     formats: ['PSD', 'AI'],
@@ -68,8 +58,6 @@ const latestItems = [
     id: 6,
     name: 'Christmas Celebration Flyer',
     category: 'Festivities',
-    price: '₦15,000',
-    originalPrice: '₦25,000',
     rating: 4.8,
     reviews: 128,
     formats: ['PSD', 'AI', 'EPS'],
@@ -80,8 +68,6 @@ const latestItems = [
     id: 7,
     name: 'Business Icon Set',
     category: 'Vector Illustrations',
-    price: '₦25,000',
-    originalPrice: null,
     rating: 4.9,
     reviews: 178,
     formats: ['AI', 'EPS', 'SVG'],
@@ -92,8 +78,6 @@ const latestItems = [
     id: 8,
     name: 'Golden Frame PNG Collection',
     category: 'PNGs',
-    price: '₦20,000',
-    originalPrice: null,
     rating: 4.9,
     reviews: 234,
     formats: ['PNG'],
@@ -111,7 +95,6 @@ export default function Latest() {
     addToCart({
       id: item.id.toString(),
       name: item.name,
-      price: item.price,
       category: item.category,
       image: ''
     });
@@ -233,14 +216,8 @@ export default function Latest() {
                       <span className="text-xs text-white/30">({item.reviews})</span>
                     </div>
 
-                    {/* Price & Formats */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="text-sm font-bold text-krown-red">{item.price}</span>
-                        {item.originalPrice && (
-                          <span className="text-xs text-white/30 line-through">{item.originalPrice}</span>
-                        )}
-                      </div>
+                    {/* Formats */}
+                    <div className="flex items-center justify-end">
                       <div className="flex gap-1">
                         {item.formats.map((format) => (
                           <span key={format} className="px-1.5 py-0.5 bg-white/5 text-[10px] text-white/40 rounded">
@@ -341,14 +318,8 @@ export default function Latest() {
                       <span className="text-xs text-white/30">({item.reviews})</span>
                     </div>
 
-                    {/* Price & Formats */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="text-sm font-bold text-krown-red">{item.price}</span>
-                        {item.originalPrice && (
-                          <span className="text-xs text-white/30 line-through">{item.originalPrice}</span>
-                        )}
-                      </div>
+                    {/* Formats */}
+                    <div className="flex items-center justify-end">
                       <div className="flex gap-1">
                         {item.formats.map((format) => (
                           <span key={format} className="px-1.5 py-0.5 bg-white/5 text-[10px] text-white/40 rounded">

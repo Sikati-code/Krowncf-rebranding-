@@ -34,15 +34,17 @@ export const isTouchDevice = () =>
 
 let shareInFlight = false;
 
+export type ShareResult = 'shared' | 'cancelled' | 'whatsapp' | 'needs-tap';
+
 /**
- * Instant mobile share. Must be called synchronously from a tap handler:
- * no awaits, no image processing and no files before navigator.share(), so the
- * share sheet opens immediately and the browser keeps the user gesture.
- * Text + link only — the link's Open Graph preview carries the image and brand.
- * Falls back to the WhatsApp deep link when the Web Share API is missing or fails.
- * Resolves 'shared', 'cancelled' or 'whatsapp' (deep link opened).
+ * Mobile share. Call from a tap handler. With a prepared `file` (the watermarked
+ * preview) the OS share sheet attaches the image itself; without one it shares
+ * text + link. If the browser has no Web Share API (in-app browsers) or the share
+ * fails, it falls back to the WhatsApp deep link.
+ * 'needs-tap' = the browser refused because the tap's user activation expired
+ * (iOS, after waiting for the image) — ask the user to tap once more.
  */
-export function shareInstantly(title: string, message: string): Promise<'shared' | 'cancelled' | 'whatsapp'> {
+export function shareInstantly(title: string, message: string, file?: File | null): Promise<ShareResult> {
   const openWhatsApp = () => {
     // Same-tab navigation: popups are blocked inside in-app browsers (Instagram, Facebook…).
     window.location.href = whatsappShareUrl(message);
@@ -54,10 +56,11 @@ export function shareInstantly(title: string, message: string): Promise<'shared'
     return Promise.resolve(openWhatsApp());
   }
 
+  const data: ShareData = file ? { title, text: message, files: [file] } : { title, text: message };
   shareInFlight = true;
   let pending: Promise<void>;
   try {
-    pending = navigator.share({ title, text: message });
+    pending = navigator.share(data);
   } catch {
     shareInFlight = false;
     return Promise.resolve(openWhatsApp());
@@ -67,6 +70,7 @@ export function shareInstantly(title: string, message: string): Promise<'shared'
     .catch((err: unknown) => {
       const name = (err as DOMException)?.name;
       if (name === 'AbortError') return 'cancelled' as const; // user closed the sheet
+      if (name === 'NotAllowedError' && file) return 'needs-tap' as const;
       console.warn('Native share failed, using WhatsApp link:', err);
       return openWhatsApp();
     })

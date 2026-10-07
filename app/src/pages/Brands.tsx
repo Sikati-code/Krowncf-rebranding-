@@ -40,8 +40,7 @@ export default function Brands() {
                 <div className="p-4">
                   <h2 className="truncate font-bold">{logo.name}</h2>
                   <p className="mt-1 text-sm text-white/50">{logo.category}</p>
-                  <div className="mt-4 flex items-center justify-between text-sm text-white/60">
-                    <span className="text-krown-red">{logo.price ?? 'Contact us'}</span>
+                  <div className="mt-4 flex items-center justify-end text-sm text-white/60">
                     {logo.downloads !== undefined && <span className="flex items-center gap-1"><Download className="h-4 w-4" />{logo.downloads}</span>}
                   </div>
                   <div className="mt-3 flex items-center gap-3 text-xs text-white/50">

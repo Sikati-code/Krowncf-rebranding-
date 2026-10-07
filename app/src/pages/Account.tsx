@@ -7,7 +7,7 @@ import Footer from '../components/Footer';
 import FloatingCTA from '../components/FloatingCTA';
 import LoginModal from '../components/LoginModal';
 import PackStrip from '../components/PackStrip';
-import PacksModal from '../components/PacksModal';
+import { useCheckout } from '../contexts/CheckoutContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useUser } from '../contexts/UserContext';
 import { CREDIT_PACKS } from '../data/pricing';
@@ -16,7 +16,7 @@ export default function Account() {
   const { language, t } = useLanguage();
   const { user, signOut } = useUser();
   const [loginOpen, setLoginOpen] = useState(false);
-  const [packsOpen, setPacksOpen] = useState(false);
+  const { openCheckout } = useCheckout();
   const dateFmt = new Intl.DateTimeFormat(language === 'fr' ? 'fr-FR' : 'en-GB', { dateStyle: 'medium' });
 
   return (
@@ -63,14 +63,14 @@ export default function Account() {
                 </div>
                 <button
                   type="button"
-                  onClick={() => setPacksOpen(true)}
+                  onClick={() => openCheckout({ reason: t('packs.reasonClean') })}
                   className="min-h-[48px] px-6 rounded-xl bg-gradient-to-r from-krown-red to-krown-orange font-bold hover:scale-[1.02] transition-transform"
                 >
                   {t('account.buyMore')}
                 </button>
               </motion.div>
 
-              <PackStrip onSelect={() => setPacksOpen(true)} />
+              <PackStrip onSelect={(id) => openCheckout({ reason: t('packs.reasonClean'), product: id })} />
 
               {/* Download history */}
               <section className="glass-card rounded-2xl p-6">
@@ -137,7 +137,6 @@ export default function Account() {
       <Footer />
       <FloatingCTA />
       <LoginModal isOpen={loginOpen} onClose={() => setLoginOpen(false)} />
-      <PacksModal open={packsOpen} onClose={() => setPacksOpen(false)} reason={t('packs.reasonClean')} />
     </div>
   );
 }

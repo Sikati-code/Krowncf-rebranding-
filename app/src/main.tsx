@@ -8,6 +8,7 @@ import App from './App.tsx'
 import { CartProvider } from './contexts/CartContext'
 import { LanguageProvider } from './contexts/LanguageContext'
 import { UserProvider } from './contexts/UserContext'
+import { CheckoutProvider } from './contexts/CheckoutContext'
 import InstallPrompt from './components/InstallPrompt'
 import { registerServiceWorker } from './lib/pwa'
 
@@ -19,6 +20,7 @@ createRoot(document.getElementById('root')!).render(
       <LanguageProvider>
         <UserProvider>
           <CartProvider>
+            <CheckoutProvider>
             <App />
             <InstallPrompt />
             <Toaster
@@ -33,6 +35,7 @@ createRoot(document.getElementById('root')!).render(
                 },
               }}
             />
+            </CheckoutProvider>
           </CartProvider>
         </UserProvider>
       </LanguageProvider>

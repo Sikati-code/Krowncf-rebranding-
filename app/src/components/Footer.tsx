@@ -300,8 +300,8 @@ export default function Footer() {
                 </li>
                 <li className="flex items-center gap-3">
                   <Mail className="w-4 h-4 text-krown-red flex-shrink-0" />
-                  <a href="mailto:Info@krowncf.com" className="text-sm text-white/40 hover:text-krown-red transition-colors">
-                    Info@krowncf.com
+                  <a href="mailto:info@krowncf.com" className="text-sm text-white/40 hover:text-krown-red transition-colors">
+                    info@krowncf.com
                   </a>
                 </li>
               </ul>

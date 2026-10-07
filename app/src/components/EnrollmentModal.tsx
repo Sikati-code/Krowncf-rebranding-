@@ -1,67 +1,94 @@
 import { motion, AnimatePresence, useDragControls, type PanInfo } from 'framer-motion';
-import { X, CheckCircle2, ArrowRight, Clock, MessageCircle, Mail } from 'lucide-react';
-import { useRef } from 'react';
+import { X, CheckCircle2, ArrowRight, Clock, Mail, GraduationCap, Package, Copy } from 'lucide-react';
+import { useRef, useState, type FormEvent } from 'react';
+import { toast } from 'sonner';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useUser } from '../contexts/UserContext';
+import { useCheckout } from '../contexts/CheckoutContext';
 import { useIsMobile } from '../hooks/use-mobile';
 import { useModalA11y } from '../hooks/use-modal-a11y';
+import { MATERIALS, formatNaira } from '../data/pricing';
 
-// Hosted payment page (e.g. a Paystack or Flutterwave payment link). While it is
-// empty, "Proceed to Payment" opens WhatsApp with a pre-filled enrollment message
-// so the team can share payment details.
-const PAYMENT_URL: string = '';
-
-const WHATSAPP_NG = '2348136804699';
-const WHATSAPP_CM = '237680200704';
-const ENROLL_EMAIL = 'krownassets@gmail.com';
+// Free enrollees are only ever shown this address — no phone, no WhatsApp.
+const ENROLL_EMAIL = 'info@krowncf.com';
 
 interface EnrollmentModalProps {
     isOpen: boolean;
     onClose: () => void;
     course: {
+        id: number;
         title: string;
-        price: string;
         gradient: string;
         weeks: number;
     } | null;
 }
 
+type Step = 'choose' | 'enrolled';
+
 export default function EnrollmentModal({ isOpen, onClose, course }: EnrollmentModalProps) {
     const { t } = useLanguage();
+    const { user } = useUser();
+    const { openCheckout } = useCheckout();
     const isMobile = useIsMobile();
     const dragControls = useDragControls();
     const panelRef = useRef<HTMLDivElement>(null);
     const closeRef = useRef<HTMLButtonElement>(null);
+    const [step, setStep] = useState<Step>('choose');
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState(user.email);
+    const [formError, setFormError] = useState<string | null>(null);
 
-    useModalA11y(isOpen, onClose, panelRef, closeRef);
+    const close = () => {
+        onClose();
+        setStep('choose');
+        setFormError(null);
+    };
+
+    useModalA11y(isOpen, close, panelRef, closeRef);
 
     if (!course) return null;
 
-    const message = t('enroll.message')
-        .replace('{course}', course.title)
-        .replace('{price}', course.price);
-    const whatsappLink = (number: string) => `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
-    const emailLink = `mailto:${ENROLL_EMAIL}?subject=${encodeURIComponent(
-        t('enroll.emailSubject').replace('{course}', course.title),
-    )}&body=${encodeURIComponent(message)}`;
-
-    const handleProceed = () => {
-        const url = PAYMENT_URL
-            ? `${PAYMENT_URL}${PAYMENT_URL.includes('?') ? '&' : '?'}course=${encodeURIComponent(course.title)}`
-            : whatsappLink(WHATSAPP_NG);
-        window.open(url, '_blank', 'noopener,noreferrer');
-    };
-
     const handleDragEnd = (_: unknown, info: PanInfo) => {
-        if (info.offset.y > 120 || info.velocity.y > 600) onClose();
+        if (info.offset.y > 120 || info.velocity.y > 600) close();
     };
 
-    const included = [t('enroll.inc.live'), t('enroll.inc.mentorship'), t('enroll.inc.materials')];
+    // Free enrollment: the registration is sent to info@krowncf.com by email.
+    const enrollFree = (e: FormEvent) => {
+        e.preventDefault();
+        if (!name.trim()) {
+            setFormError(t('enroll.err.name'));
+            return;
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+            setFormError(t('enroll.err.email'));
+            return;
+        }
+        setFormError(null);
+        const body = t('enroll.freeMessage')
+            .replace('{name}', name.trim())
+            .replace('{email}', email.trim())
+            .replace('{course}', course.title);
+        const subject = t('enroll.freeSubject').replace('{course}', course.title);
+        window.location.href = `mailto:${ENROLL_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        setStep('enrolled');
+    };
 
-    const contactOptions = [
-        { href: whatsappLink(WHATSAPP_NG), icon: MessageCircle, label: t('enroll.whatsappNg'), detail: '+234 813 680 4699', tone: 'hover:border-green-500/50 hover:bg-green-500/10', iconTone: 'text-green-400' },
-        { href: whatsappLink(WHATSAPP_CM), icon: MessageCircle, label: t('enroll.whatsappCm'), detail: '+237 680 20 07 04', tone: 'hover:border-green-500/50 hover:bg-green-500/10', iconTone: 'text-green-400' },
-        { href: emailLink, icon: Mail, label: t('enroll.email'), detail: ENROLL_EMAIL, tone: 'hover:border-blue-500/50 hover:bg-blue-500/10', iconTone: 'text-blue-400' },
-    ];
+    const buyMaterials = () => {
+        close();
+        openCheckout({ product: `materials:${course.id}`, label: course.title, reason: t('enroll.materialsReason') });
+    };
+
+    const copyEmail = async () => {
+        try {
+            await navigator.clipboard.writeText(ENROLL_EMAIL);
+            toast.success(t('enroll.emailCopied'));
+        } catch {
+            // Clipboard blocked — the address is visible on screen anyway.
+        }
+    };
+
+    const freeIncludes = [t('enroll.inc.live'), t('enroll.inc.mentorship')];
+    const materialIncludes = [t('enroll.inc.materials'), t('enroll.inc.assets'), t('enroll.inc.templates')];
 
     return (
         <AnimatePresence>
@@ -73,7 +100,7 @@ export default function EnrollmentModal({ isOpen, onClose, course }: EnrollmentM
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        onClick={onClose}
+                        onClick={close}
                         className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm"
                         aria-hidden="true"
                     />
@@ -81,12 +108,10 @@ export default function EnrollmentModal({ isOpen, onClose, course }: EnrollmentM
                     {/* Positioner: bottom sheet on mobile, centred card on larger screens */}
                     <motion.div key="enroll-positioner" className="fixed inset-0 z-[70] flex items-end md:items-center justify-center md:p-6 pointer-events-none">
                         <motion.div
-                            key="enroll-panel"
                             ref={panelRef}
                             role="dialog"
                             aria-modal="true"
                             aria-labelledby="enroll-title"
-                            aria-describedby="enroll-summary"
                             initial={isMobile ? { y: '100%' } : { opacity: 0, scale: 0.95, y: 24 }}
                             animate={isMobile ? { y: 0 } : { opacity: 1, scale: 1, y: 0 }}
                             exit={isMobile ? { y: '100%' } : { opacity: 0, scale: 0.95, y: 24 }}
@@ -101,7 +126,6 @@ export default function EnrollmentModal({ isOpen, onClose, course }: EnrollmentM
                         >
                             {/* Header */}
                             <div className={`relative px-5 pt-3 pb-5 md:p-6 border-b border-white/5 bg-gradient-to-r ${course.gradient}`}>
-                                {/* Drag handle (mobile) */}
                                 <div
                                     onPointerDown={(e) => dragControls.start(e)}
                                     className="md:hidden flex justify-center pb-3 touch-none cursor-grab active:cursor-grabbing"
@@ -112,16 +136,20 @@ export default function EnrollmentModal({ isOpen, onClose, course }: EnrollmentM
                                 <div className="flex items-start justify-between gap-3">
                                     <div className="min-w-0">
                                         <p className="text-xs uppercase tracking-[0.18em] text-white/60 font-medium">
-                                            {t('enroll.eyebrow')}
+                                            {step === 'enrolled' ? t('enroll.doneEyebrow') : t('enroll.eyebrow')}
                                         </p>
                                         <h3 id="enroll-title" className="mt-1 text-xl md:text-2xl font-bold text-white leading-tight">
                                             {course.title}
                                         </h3>
+                                        <p className="mt-1 text-xs text-white/70 flex items-center gap-1">
+                                            <Clock className="w-3.5 h-3.5" aria-hidden="true" />
+                                            {course.weeks} {t('training.weeks')}
+                                        </p>
                                     </div>
                                     <button
                                         ref={closeRef}
                                         type="button"
-                                        onClick={onClose}
+                                        onClick={close}
                                         aria-label={t('enroll.close')}
                                         className="-mr-2 -mt-1 shrink-0 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
                                     >
@@ -130,86 +158,127 @@ export default function EnrollmentModal({ isOpen, onClose, course }: EnrollmentM
                                 </div>
                             </div>
 
-                            {/* Body */}
-                            <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-5 md:p-6 space-y-6">
-                                {/* Summary */}
-                                <div id="enroll-summary" className="flex items-stretch gap-3">
-                                    <div className="flex-1 rounded-2xl bg-krown-orange/10 border border-krown-orange/30 p-4">
-                                        <p className="text-xs text-white/50">{t('enroll.price')}</p>
-                                        <p className="mt-1 text-2xl md:text-3xl font-bold text-krown-orange">{course.price}</p>
-                                        <p className="mt-1 text-[11px] text-white/50">{t('training.includes')}</p>
-                                    </div>
-                                    <div className="rounded-2xl bg-white/5 border border-white/10 p-4 flex flex-col justify-center min-w-[96px]">
-                                        <p className="text-xs text-white/50 flex items-center gap-1">
-                                            <Clock className="w-3.5 h-3.5" aria-hidden="true" />
-                                            {t('enroll.duration')}
-                                        </p>
-                                        <p className="mt-1 text-lg font-semibold text-white">
-                                            {course.weeks} {t('training.weeks')}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                {/* Included */}
-                                <div>
-                                    <h4 className="text-sm font-semibold text-white mb-3">{t('enroll.included')}</h4>
-                                    <ul className="space-y-2.5">
-                                        {included.map((item, i) => (
-                                            <motion.li
-                                                key={item}
-                                                initial={{ opacity: 0, x: -8 }}
-                                                animate={{ opacity: 1, x: 0 }}
-                                                transition={{ delay: 0.1 + i * 0.06 }}
-                                                className="flex items-center gap-2.5 text-sm text-white/70"
-                                            >
-                                                <CheckCircle2 className="w-4 h-4 text-krown-orange shrink-0" aria-hidden="true" />
-                                                {item}
-                                            </motion.li>
-                                        ))}
-                                    </ul>
-                                </div>
-
-                                {/* Direct contact options */}
-                                <div>
-                                    <div className="flex items-center gap-3 mb-3">
-                                        <span className="h-px flex-1 bg-white/10" />
-                                        <span className="text-xs text-white/40">{t('enroll.or')}</span>
-                                        <span className="h-px flex-1 bg-white/10" />
-                                    </div>
-                                    <div className="grid grid-cols-1 gap-2.5">
-                                        {contactOptions.map((option) => (
-                                            <a
-                                                key={option.label}
-                                                href={option.href}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className={`flex items-center gap-3 min-h-[56px] px-4 py-2.5 rounded-xl border border-white/10 bg-white/5 transition-all duration-300 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 ${option.tone}`}
-                                            >
-                                                <span className="w-9 h-9 rounded-lg bg-white/5 flex items-center justify-center shrink-0">
-                                                    <option.icon className={`w-5 h-5 ${option.iconTone}`} aria-hidden="true" />
+                            <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-5 md:p-6 space-y-4 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+                                {step === 'choose' ? (
+                                    <>
+                                        {/* Option 1 — free enrollment */}
+                                        <form
+                                            onSubmit={enrollFree}
+                                            noValidate
+                                            className="rounded-2xl border-2 border-green-500/40 bg-green-500/5 p-4"
+                                            aria-labelledby="enroll-free-title"
+                                        >
+                                            <div className="flex items-start justify-between gap-3">
+                                                <h4 id="enroll-free-title" className="font-bold text-white flex items-center gap-2">
+                                                    <GraduationCap className="w-5 h-5 text-green-400" aria-hidden="true" />
+                                                    {t('enroll.freeTitle')}
+                                                </h4>
+                                                <span className="shrink-0 rounded-full bg-green-500 px-2.5 py-0.5 text-xs font-bold text-white">
+                                                    {t('enroll.free')}
                                                 </span>
-                                                <span className="min-w-0 flex-1">
-                                                    <span className="block text-sm font-medium text-white">{option.label}</span>
-                                                    <span className="block text-xs text-white/50 truncate">{option.detail}</span>
-                                                </span>
-                                                <ArrowRight className="w-4 h-4 text-white/30 shrink-0" aria-hidden="true" />
+                                            </div>
+                                            <p className="mt-1 text-xs text-white/60">{t('enroll.freeBlurb')}</p>
+                                            <ul className="mt-3 space-y-1.5">
+                                                {freeIncludes.map((item) => (
+                                                    <li key={item} className="flex items-center gap-2 text-sm text-white/70">
+                                                        <CheckCircle2 className="w-4 h-4 text-green-400 shrink-0" aria-hidden="true" />
+                                                        {item}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                            <div className="mt-4 grid gap-2.5">
+                                                <input
+                                                    type="text"
+                                                    autoComplete="name"
+                                                    value={name}
+                                                    onChange={(e) => setName(e.target.value)}
+                                                    placeholder={t('enroll.namePlaceholder')}
+                                                    aria-label={t('enroll.namePlaceholder')}
+                                                    className="w-full min-h-[48px] rounded-xl border border-white/15 bg-white/5 px-4 text-white placeholder:text-white/30 focus:outline-none focus:border-green-500"
+                                                />
+                                                <input
+                                                    type="email"
+                                                    autoComplete="email"
+                                                    inputMode="email"
+                                                    value={email}
+                                                    onChange={(e) => setEmail(e.target.value)}
+                                                    placeholder={t('enroll.emailPlaceholder')}
+                                                    aria-label={t('enroll.emailPlaceholder')}
+                                                    className="w-full min-h-[48px] rounded-xl border border-white/15 bg-white/5 px-4 text-white placeholder:text-white/30 focus:outline-none focus:border-green-500"
+                                                />
+                                                {formError && (
+                                                    <p role="alert" className="text-xs text-red-300">
+                                                        {formError}
+                                                    </p>
+                                                )}
+                                                <button
+                                                    type="submit"
+                                                    className="min-h-[52px] rounded-xl bg-green-600 hover:bg-green-500 text-white font-bold flex items-center justify-center gap-2 transition-colors active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+                                                >
+                                                    {t('enroll.freeCta')}
+                                                    <ArrowRight className="w-4 h-4" aria-hidden="true" />
+                                                </button>
+                                            </div>
+                                        </form>
+
+                                        {/* Option 2 — optional paid materials */}
+                                        <div className="rounded-2xl border-2 border-krown-orange/40 bg-krown-orange/5 p-4" aria-labelledby="enroll-materials-title">
+                                            <div className="flex items-start justify-between gap-3">
+                                                <h4 id="enroll-materials-title" className="font-bold text-white flex items-center gap-2">
+                                                    <Package className="w-5 h-5 text-krown-orange" aria-hidden="true" />
+                                                    {t('enroll.materialsName')}
+                                                </h4>
+                                                <span className="shrink-0 text-lg font-bold text-krown-orange">{formatNaira(MATERIALS.ngn)}</span>
+                                            </div>
+                                            <p className="mt-1 text-xs text-white/60">{t('enroll.materialsBlurb')}</p>
+                                            <ul className="mt-3 space-y-1.5">
+                                                {materialIncludes.map((item) => (
+                                                    <li key={item} className="flex items-center gap-2 text-sm text-white/70">
+                                                        <CheckCircle2 className="w-4 h-4 text-krown-orange shrink-0" aria-hidden="true" />
+                                                        {item}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                            <button
+                                                type="button"
+                                                onClick={buyMaterials}
+                                                className="mt-4 w-full min-h-[52px] rounded-xl border border-krown-orange/60 bg-krown-orange/10 hover:bg-krown-orange/20 text-white font-semibold flex items-center justify-center gap-2 transition-colors active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-krown-orange"
+                                            >
+                                                {t('enroll.materialsCta').replace('{price}', formatNaira(MATERIALS.ngn))}
+                                                <ArrowRight className="w-4 h-4" aria-hidden="true" />
+                                            </button>
+                                            <p className="mt-2 text-center text-[11px] text-white/40">{t('enroll.materialsOptional')}</p>
+                                        </div>
+                                    </>
+                                ) : (
+                                    /* Free enrollment confirmation — email contact only */
+                                    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="text-center py-2" role="status">
+                                        <Mail className="w-12 h-12 mx-auto text-green-400" aria-hidden="true" />
+                                        <h4 className="mt-3 text-lg font-bold text-white">{t('enroll.doneTitle')}</h4>
+                                        <p className="mt-2 text-sm text-white/70">{t('enroll.doneBody')}</p>
+                                        <div className="mt-5 flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 p-2 pl-4">
+                                            <a href={`mailto:${ENROLL_EMAIL}`} className="flex-1 text-left text-sm font-semibold text-white hover:text-krown-orange">
+                                                {ENROLL_EMAIL}
                                             </a>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Sticky footer */}
-                            <div className="px-5 pt-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] md:p-6 border-t border-white/5 bg-krown-black/80 backdrop-blur">
-                                <button
-                                    type="button"
-                                    onClick={handleProceed}
-                                    className="w-full min-h-[56px] md:min-h-[48px] py-3.5 bg-gradient-to-r from-krown-red to-krown-red-dark text-white font-semibold rounded-2xl md:rounded-xl hover:shadow-glow transition-all duration-300 flex items-center justify-center gap-2 group active:scale-[0.98] text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
-                                >
-                                    {t('enroll.proceed')}
-                                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
-                                </button>
-                                <p className="mt-2 text-center text-[11px] text-white/40">{t('enroll.proceedHint')}</p>
+                                            <button
+                                                type="button"
+                                                onClick={copyEmail}
+                                                aria-label={t('enroll.copyEmail')}
+                                                className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-white/60 hover:text-white hover:bg-white/10"
+                                            >
+                                                <Copy className="w-4 h-4" aria-hidden="true" />
+                                            </button>
+                                        </div>
+                                        <p className="mt-3 text-xs text-white/40">{t('enroll.doneHint')}</p>
+                                        <button
+                                            type="button"
+                                            onClick={close}
+                                            className="mt-5 w-full min-h-[48px] rounded-xl bg-gradient-to-r from-krown-red to-krown-orange font-bold text-white"
+                                        >
+                                            {t('enroll.done')}
+                                        </button>
+                                    </motion.div>
+                                )}
                             </div>
                         </motion.div>
                     </motion.div>

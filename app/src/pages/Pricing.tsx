@@ -5,12 +5,13 @@ import Footer from '../components/Footer';
 import FloatingCTA from '../components/FloatingCTA';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useUser } from '../contexts/UserContext';
-import { CREDIT_PACKS, formatNaira, pricePerImage } from '../data/pricing';
-import { startPackPurchase } from '../lib/purchase';
+import { CREDIT_PACKS, formatNaira } from '../data/pricing';
+import { useCheckout } from '../contexts/CheckoutContext';
 
 export default function Pricing() {
   const { language, t } = useLanguage();
   const { user } = useUser();
+  const { openCheckout } = useCheckout();
 
   const facts = [
     { icon: Sparkles, text: t('packs.benefitClean') },
@@ -41,7 +42,7 @@ export default function Pricing() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {CREDIT_PACKS.map((pack, i) => {
-              const featured = pack.id === 'pack10';
+              const featured = !!pack.highlight;
               return (
                 <motion.div
                   key={pack.id}
@@ -57,10 +58,7 @@ export default function Pricing() {
                   )}
                   <h2 className="text-xl font-bold">{pack.name[language]}</h2>
                   <p className="text-sm text-white/50 mt-1">{pack.blurb[language]}</p>
-                  <p className="mt-5 text-4xl font-bold text-krown-orange">{formatNaira(pack.price)}</p>
-                  <p className="text-xs text-white/40 mt-1">
-                    {t('packs.perImage').replace('{price}', formatNaira(pricePerImage(pack)))}
-                  </p>
+                  <p className="mt-5 text-4xl font-bold text-krown-orange">{formatNaira(pack.ngn)}</p>
                   <ul className="mt-5 space-y-2 text-sm text-white/70 flex-1">
                     <li className="flex items-center gap-2">
                       <Check className="w-4 h-4 text-krown-orange shrink-0" aria-hidden="true" />
@@ -77,7 +75,7 @@ export default function Pricing() {
                   </ul>
                   <button
                     type="button"
-                    onClick={() => startPackPurchase(pack, language, user.email)}
+                    onClick={() => openCheckout({ product: pack.id })}
                     className={`mt-6 min-h-[48px] rounded-xl font-bold transition-transform hover:scale-[1.02] active:scale-[0.98] ${
                       featured ? 'bg-gradient-to-r from-krown-red to-krown-orange text-white' : 'border border-white/25 bg-white/5 hover:bg-white/10'
                     }`}

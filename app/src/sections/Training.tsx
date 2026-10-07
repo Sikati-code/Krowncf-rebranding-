@@ -15,12 +15,12 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import EnrollmentModal from '../components/EnrollmentModal';
+import { MATERIALS, formatNaira } from '../data/pricing';
 
 const courses = [
   {
     id: 1,
     title: 'Font Creation',
-    price: '₦150,000',
     icon: Type,
     weeks: 6,
     students: '856',
@@ -31,7 +31,6 @@ const courses = [
   {
     id: 2,
     title: 'Professional Logo Creation',
-    price: '₦150,000',
     icon: Crown,
     weeks: 8,
     students: '2,100',
@@ -42,7 +41,6 @@ const courses = [
   {
     id: 3,
     title: 'Basics of Graphics Design',
-    price: '₦100,000',
     icon: Palette,
     weeks: 4,
     students: '1,240',
@@ -53,7 +51,6 @@ const courses = [
   {
     id: 4,
     title: 'Brand Identity',
-    price: '₦100,000',
     icon: Fingerprint,
     weeks: 12,
     students: '1,580',
@@ -131,11 +128,11 @@ function CourseCard({ course, index, onEnroll }: { course: Course; index: number
           {/* Price & CTA */}
           <div className="flex items-center justify-between pt-4 border-t border-white/5">
             <div className="flex flex-col gap-0.5">
-              <span className="text-xl sm:text-2xl font-bold text-krown-orange mt-1">
-                {course.price}
+              <span className="text-xl sm:text-2xl font-bold text-green-400 mt-1">
+                {t('training.free')}
               </span>
               <span className="text-[11px] font-medium text-white/50 bg-white/5 px-2 py-0.5 rounded-full inline-block">
-                {t('training.includes')}
+                {t('training.materialsOptional').replace('{price}', formatNaira(MATERIALS.ngn))}
               </span>
             </div>
             <button

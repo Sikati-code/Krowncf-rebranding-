@@ -17,6 +17,14 @@ export interface CreditPurchase {
   packId: string;
   credits: number;
   purchasedAt: string;
+  /** Gateway payment reference (verified server-side). */
+  reference?: string;
+}
+
+export interface MaterialsPurchase {
+  courseId: string;
+  reference: string;
+  purchasedAt: string;
 }
 
 interface User {
@@ -29,6 +37,7 @@ interface User {
   ownedDesigns: string[];
   downloadHistory: DownloadRecord[];
   purchases: CreditPurchase[];
+  materials: MaterialsPurchase[];
 }
 
 export type CleanStatus = 'signin' | 'owned' | 'credit' | 'nocredits';
@@ -41,8 +50,14 @@ interface UserContextType {
   cleanStatus: (designId: string) => CleanStatus;
   /** Records a download; consumes one credit for a first clean download of a design. */
   recordDownload: (designId: string, title: string, watermarked: boolean) => void;
-  /** Adds credits after a confirmed pack purchase (call from your payment callback). */
-  addCredits: (packId: string, credits: number) => void;
+  /**
+   * Adds credits for a payment the server has verified. Idempotent: a payment
+   * reference is only ever redeemed once. Returns false if already redeemed.
+   */
+  addCredits: (reference: string, packId: string, credits: number) => boolean;
+  /** Records a verified course-materials purchase (idempotent by reference). */
+  addMaterials: (reference: string, courseId: string) => boolean;
+  isRedeemed: (reference: string) => boolean;
   /** Users with credits (or owned designs) get clean, watermark-free files. */
   hasCredits: boolean;
 }
@@ -58,6 +73,7 @@ const GUEST_USER: User = {
   ownedDesigns: [],
   downloadHistory: [],
   purchases: [],
+  materials: [],
 };
 
 const MAX_HISTORY = 100;
@@ -78,6 +94,7 @@ function loadUser(): User {
       ownedDesigns: Array.isArray(parsed.ownedDesigns) ? parsed.ownedDesigns : [],
       downloadHistory: Array.isArray(parsed.downloadHistory) ? parsed.downloadHistory : [],
       purchases: Array.isArray(parsed.purchases) ? parsed.purchases : [],
+      materials: Array.isArray(parsed.materials) ? parsed.materials : [],
     };
   } catch {
     return GUEST_USER;
@@ -89,8 +106,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     try {
-      const { id, name, email, signedIn, credits, ownedDesigns, downloadHistory, purchases } = user;
-      localStorage.setItem('user', JSON.stringify({ id, name, email, signedIn, credits, ownedDesigns, downloadHistory, purchases }));
+      const { id, name, email, signedIn, credits, ownedDesigns, downloadHistory, purchases, materials } = user;
+      localStorage.setItem(
+        'user',
+        JSON.stringify({ id, name, email, signedIn, credits, ownedDesigns, downloadHistory, purchases, materials }),
+      );
     } catch {
       // Storage unavailable (private mode / quota) — keep the in-memory session.
     }
@@ -128,18 +148,40 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const addCredits = (packId: string, credits: number) => {
-    setUser((current) => ({
-      ...current,
-      credits: current.credits + credits,
-      purchases: [{ packId, credits, purchasedAt: new Date().toISOString() }, ...current.purchases],
-    }));
+  const isRedeemed = (reference: string) =>
+    user.purchases.some((p) => p.reference === reference) || user.materials.some((m) => m.reference === reference);
+
+  const addCredits = (reference: string, packId: string, credits: number) => {
+    if (isRedeemed(reference)) return false;
+    setUser((current) => {
+      if (current.purchases.some((p) => p.reference === reference)) return current;
+      return {
+        ...current,
+        credits: current.credits + credits,
+        purchases: [{ packId, credits, reference, purchasedAt: new Date().toISOString() }, ...current.purchases],
+      };
+    });
+    return true;
+  };
+
+  const addMaterials = (reference: string, courseId: string) => {
+    if (isRedeemed(reference)) return false;
+    setUser((current) => {
+      if (current.materials.some((m) => m.reference === reference)) return current;
+      return {
+        ...current,
+        materials: [{ courseId, reference, purchasedAt: new Date().toISOString() }, ...current.materials],
+      };
+    });
+    return true;
   };
 
   const hasCredits = user.signedIn && user.credits > 0;
 
   return (
-    <UserContext.Provider value={{ user, signIn, signOut, cleanStatus, recordDownload, addCredits, hasCredits }}>
+    <UserContext.Provider
+      value={{ user, signIn, signOut, cleanStatus, recordDownload, addCredits, addMaterials, isRedeemed, hasCredits }}
+    >
       {children}
     </UserContext.Provider>
   );

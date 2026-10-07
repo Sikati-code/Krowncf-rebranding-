@@ -7,59 +7,33 @@ const INITIAL_BARS: Bar[] = Array.from({ length: 8 }).map(() => ({
   height: 8 + Math.random() * 20,
   duration: 1 + Math.random(),
 }));
-import { Mic, ExternalLink } from 'lucide-react';
+import { Mic, ExternalLink, Youtube } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+
+// Official podcast links. A platform without a URL is not shown.
+const SPOTIFY_URL = 'https://open.spotify.com/show/5UBM3i3aFxAz4zYR1SW8Ef';
+const YOUTUBE_URL = 'https://youtube.com/playlist?list=PLINg5DBWIOlk&si=c6fr_JtEtpIWj7eI';
 
 const podcastPlatforms = [
   {
-    name: 'Spotify',
+    key: 'spotify',
+    labelKey: 'podcasts.spotify',
     icon: (
-      <svg viewBox="0 0 24 24" className="w-5 h-5 sm:w-6 sm:h-6" fill="currentColor">
+      <svg viewBox="0 0 24 24" className="w-5 h-5 sm:w-6 sm:h-6" fill="currentColor" aria-hidden="true">
         <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
       </svg>
     ),
-    href: 'https://open.spotify.com',
+    href: SPOTIFY_URL,
     color: 'hover:text-[#1DB954] hover:bg-[#1DB954]/10',
   },
   {
-    name: 'Apple Podcasts',
-    icon: (
-      <svg viewBox="0 0 24 24" className="w-5 h-5 sm:w-6 sm:h-6" fill="currentColor">
-        <path d="M5.34 0A5.328 5.328 0 000 5.34v13.32A5.328 5.328 0 005.34 24h13.32A5.328 5.328 0 0024 18.66V5.34A5.328 5.328 0 0018.66 0zm6.525 2.568c.516 0 .922.073 1.22.218.298.146.497.332.596.558l.137.346-.463 2.453c-.114.53-.335.937-.662 1.22-.328.284-.724.426-1.19.426-.346 0-.642-.084-.889-.252a1.42 1.42 0 01-.478-.567 1.79 1.79 0 01-.138-.694c0-.447.114-.85.342-1.21.228-.358.55-.64.965-.845.416-.205.872-.308 1.37-.308l-.184.01c-.397 0-.72.12-.967.36-.248.24-.39.562-.428.965l-.363 1.91c-.026.158-.086.28-.18.366a.435.435 0 01-.307.112.42.42 0 01-.308-.123.438.438 0 01-.135-.313c0-.09.016-.176.048-.26l.665-3.5a.834.834 0 01.165-.353.385.385 0 01.305-.13c.122 0 .22.044.294.13.073.087.11.2.11.34 0 .046-.006.096-.017.15l-.058.31c.3-.53.646-.917 1.037-1.16.39-.243.838-.364 1.342-.364zm-3.595 5.67c.447 0 .855.082 1.224.247.37.165.67.392.902.682.232.29.363.62.392.99H8.832c.073-.39.267-.703.582-.94.315-.236.69-.355 1.126-.355.158 0 .305.02.44.06.136-.22.305-.39.508-.51a1.26 1.26 0 01.668-.174zm6.653.108c.69 0 1.258.225 1.705.676.447.45.67 1.017.67 1.7 0 .682-.225 1.25-.676 1.7-.45.452-1.02.677-1.705.677-.69 0-1.26-.225-1.71-.676-.452-.45-.677-1.018-.677-1.7 0-.683.227-1.25.68-1.7.452-.452 1.023-.677 1.713-.677zm-6.567.95c-.346 0-.66.09-.94.27-.28.18-.478.418-.596.714h3.07c-.11-.296-.302-.534-.576-.714a1.524 1.524 0 00-.958-.27zm6.567.38c-.49 0-.895.17-1.214.51-.32.34-.478.76-.478 1.26s.16.92.48 1.26c.32.34.724.51 1.213.51.494 0 .9-.17 1.22-.51.318-.34.478-.76.478-1.26s-.16-.92-.48-1.26c-.32-.34-.725-.51-1.22-.51z"/>
-      </svg>
-    ),
-    href: 'https://podcasts.apple.com',
-    color: 'hover:text-[#9933FF] hover:bg-[#9933FF]/10',
+    key: 'youtube',
+    labelKey: 'podcasts.youtube',
+    icon: <Youtube className="w-5 h-5 sm:w-6 sm:h-6" aria-hidden="true" />,
+    href: YOUTUBE_URL,
+    color: 'hover:text-[#FF0000] hover:bg-[#FF0000]/10',
   },
-  {
-    name: 'Google Podcasts',
-    icon: (
-      <svg viewBox="0 0 24 24" className="w-5 h-5 sm:w-6 sm:h-6" fill="currentColor">
-        <circle cx="12" cy="12" r="3.5"/>
-        <circle cx="3.5" cy="12" r="1.5" fill="#EA4335"/>
-        <circle cx="20.5" cy="12" r="1.5" fill="#34A853"/>
-        <circle cx="12" cy="3.5" r="1.5" fill="#FAB908"/>
-        <circle cx="12" cy="20.5" r="1.5" fill="#4285F4"/>
-        <circle cx="6.05" cy="6.05" r="1.5" fill="#EA4335"/>
-        <circle cx="17.95" cy="17.95" r="1.5" fill="#34A853"/>
-        <circle cx="6.05" cy="17.95" r="1.5" fill="#FAB908"/>
-        <circle cx="17.95" cy="6.05" r="1.5" fill="#4285F4"/>
-      </svg>
-    ),
-    href: 'https://podcasts.google.com',
-    color: 'hover:text-[#FAB908] hover:bg-[#FAB908]/10',
-  },
-  {
-    name: 'Boomplay',
-    icon: (
-      <svg viewBox="0 0 24 24" className="w-5 h-5 sm:w-6 sm:h-6" fill="currentColor">
-        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z"/>
-      </svg>
-    ),
-    href: 'https://www.boomplay.com',
-    color: 'hover:text-[#E85D04] hover:bg-[#E85D04]/10',
-  },
-];
+].filter((platform) => platform.href);
 
 export default function Podcasts() {
   const { t } = useLanguage();
@@ -174,12 +148,10 @@ export default function Podcasts() {
                 <div className="lg:w-3/5 p-6 sm:p-8 lg:p-10 flex flex-col justify-center">
                   <div className="mb-6">
                     <h3 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-3">
-                      The KCF Podcast
+                      {t('podcasts.showName')}
                     </h3>
                     <p className="text-sm sm:text-base text-white/50 leading-relaxed">
-                      Join us as we dive deep into the world of graphic design, creativity, 
-                      and building successful creative businesses in Africa. Featuring interviews 
-                      with top designers, entrepreneurs, and industry leaders.
+                      {t('podcasts.description')}
                     </p>
                   </div>
 
@@ -187,27 +159,27 @@ export default function Podcasts() {
                   <div className="flex gap-6 sm:gap-8 mb-8">
                     <div>
                       <div className="text-xl sm:text-2xl font-bold text-white">50+</div>
-                      <div className="text-xs text-white/40">Episodes</div>
+                      <div className="text-xs text-white/40">{t('podcasts.episodes')}</div>
                     </div>
                     <div>
                       <div className="text-xl sm:text-2xl font-bold text-white">10K+</div>
-                      <div className="text-xs text-white/40">Listeners</div>
+                      <div className="text-xs text-white/40">{t('podcasts.listeners')}</div>
                     </div>
                     <div>
-                      <div className="text-xl sm:text-2xl font-bold text-white">Weekly</div>
-                      <div className="text-xs text-white/40">New Episodes</div>
+                      <div className="text-xl sm:text-2xl font-bold text-white">{t('podcasts.weekly')}</div>
+                      <div className="text-xs text-white/40">{t('podcasts.newEpisodes')}</div>
                     </div>
                   </div>
 
                   {/* Platform Links */}
                   <div>
                     <p className="text-xs sm:text-sm text-white/40 mb-3 uppercase tracking-wider">
-                      Listen on
+                      {t('podcasts.listenOn')}
                     </p>
                     <div className="flex flex-wrap gap-2 sm:gap-3">
                       {podcastPlatforms.map((platform) => (
                         <motion.a
-                          key={platform.name}
+                          key={platform.key}
                           href={platform.href}
                           target="_blank"
                           rel="noopener noreferrer"
@@ -216,8 +188,8 @@ export default function Podcasts() {
                           className={`flex items-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl bg-white/5 border border-white/10 text-white/60 transition-all duration-300 ${platform.color}`}
                         >
                           {platform.icon}
-                          <span className="text-xs sm:text-sm font-medium">{platform.name}</span>
-                          <ExternalLink className="w-3 h-3 opacity-50" />
+                          <span className="text-xs sm:text-sm font-medium">{t(platform.labelKey)}</span>
+                          <ExternalLink className="w-3 h-3 opacity-50" aria-hidden="true" />
                         </motion.a>
                       ))}
                     </div>

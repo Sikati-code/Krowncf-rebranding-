@@ -8,11 +8,12 @@ import { downloadDesign, preloadWatermark } from '../lib/watermark';
 import type { Design } from '../data/categories';
 import LoginModal from './LoginModal';
 import PackStrip from './PackStrip';
+import type { CreditPack } from '../data/pricing';
 
 interface DownloadButtonProps {
   design: Design;
   /** Opens the credit-pack picker with a localised reason. */
-  onNeedCredits: (reason: string) => void;
+  onNeedCredits: (reason: string, product?: CreditPack['id']) => void;
   /** Rendered full-width below the two download buttons (the WhatsApp share). */
   shareAction?: ReactNode;
 }
@@ -153,7 +154,7 @@ export default function DownloadButton({ design, onNeedCredits, shareAction }: D
         )}
       </motion.div>
 
-      <PackStrip onSelect={() => onNeedCredits(t('packs.reasonClean'))} />
+      <PackStrip onSelect={(id) => onNeedCredits(t('packs.reasonClean'), id)} />
 
       <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
     </div>
