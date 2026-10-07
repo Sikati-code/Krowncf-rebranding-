@@ -1,11 +1,14 @@
 // Client-side download pipeline for design files.
-// Free/Basic users get a Krown-branded watermark burned into the pixels of the
-// downloaded file; Pro/Advanced users get the original bytes, untouched.
+// - Preview / no-credit downloads: Alamy-style watermark (small, white, low
+//   opacity, centred) plus a slim attribution strip, burned into the pixels.
+// - Credit downloads: the original bytes, untouched.
 
-const WATERMARK_SRC = '/assets/watermark.png';
+const WATERMARK_SRC = '/assets/watermark-white.png';
 
-// Browsers refuse canvases above roughly 16k px per side / ~268M px area.
-const MAX_CANVAS_SIDE = 8192;
+// iOS Safari refuses (or kills the tab on) canvases above ~16.7M pixels, so
+// never allocate more than 4096 px per side. Previews are much smaller.
+const MAX_CANVAS_SIDE = 4096;
+export const PREVIEW_MAX_SIDE = 1200;
 
 export class DownloadError extends Error {}
 
@@ -31,7 +34,7 @@ export function getWatermark() {
   return watermarkPromise;
 }
 
-/** Warm the watermark cache so the first free download feels instant. */
+/** Warm the watermark cache so the first watermarked download feels instant. */
 export function preloadWatermark() {
   getWatermark().catch(() => {});
 }
@@ -79,85 +82,60 @@ export function saveBlob(blob: Blob, filename: string) {
   setTimeout(() => URL.revokeObjectURL(url), 10_000);
 }
 
+/**
+ * Alamy-style mark: a small white Krown logo, centred, at very low opacity with a
+ * faint shadow so it still reads on white artwork, plus a slim footer strip
+ * ("Krown Creative Factory · krowncf.com · ID").
+ */
 function drawWatermark(
   ctx: CanvasRenderingContext2D,
   width: number,
   height: number,
   mark: HTMLImageElement,
-  tagline: string,
+  footer: string,
 ) {
   const shortSide = Math.min(width, height);
-  const markRatio = mark.naturalHeight / mark.naturalWidth;
+  const ratio = mark.naturalHeight / mark.naturalWidth;
 
-  // 1. Diagonal tiled layer: covers the whole image so no crop removes it.
-  const tileW = Math.max(120, shortSide * 0.28);
-  const tileH = tileW * markRatio;
-  const gapX = tileW * 0.55;
-  const gapY = tileH * 1.6;
-  const diagonal = Math.hypot(width, height);
-
+  // Centred signature: ~34% of the image width, capped so tall art isn't dominated.
+  const markW = Math.min(width * 0.34, (height * 0.18) / ratio);
+  const markH = markW * ratio;
   ctx.save();
-  ctx.translate(width / 2, height / 2);
-  ctx.rotate(-Math.PI / 6);
-  ctx.globalAlpha = 0.16;
-  let row = 0;
-  for (let y = -diagonal / 2; y < diagonal / 2; y += tileH + gapY, row++) {
-    const offset = row % 2 === 0 ? 0 : (tileW + gapX) / 2;
-    for (let x = -diagonal / 2 - offset; x < diagonal / 2; x += tileW + gapX) {
-      ctx.drawImage(mark, x, y, tileW, tileH);
-    }
-  }
+  ctx.globalAlpha = 0.28;
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.35)';
+  ctx.shadowBlur = Math.max(2, shortSide * 0.006);
+  ctx.drawImage(mark, (width - markW) / 2, (height - markH) / 2, markW, markH);
   ctx.restore();
 
-  // 2. Large centred mark, diagonal, with a soft halo so it reads on dark and light art.
-  const centreW = Math.min(width * 0.7, height * 0.7 / markRatio);
-  const centreH = centreW * markRatio;
+  // Footer strip.
+  const fontSize = Math.max(9, Math.round(shortSide * 0.022));
+  const stripH = Math.round(fontSize * 2.1);
   ctx.save();
-  ctx.translate(width / 2, height / 2);
-  ctx.rotate(-Math.PI / 6);
-  ctx.globalAlpha = 0.38;
-  ctx.shadowColor = 'rgba(255, 255, 255, 0.55)';
-  ctx.shadowBlur = shortSide * 0.02;
-  ctx.drawImage(mark, -centreW / 2, -centreH / 2, centreW, centreH);
-  ctx.restore();
-
-  // 3. Footer ribbon with brand name + upgrade tagline.
-  const fontSize = Math.max(11, Math.round(shortSide * 0.028));
-  const bandH = Math.round(fontSize * 2.4);
-  ctx.save();
-  ctx.fillStyle = 'rgba(10, 10, 10, 0.62)';
-  ctx.fillRect(0, height - bandH, width, bandH);
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
-  ctx.font = `600 ${fontSize}px "Inter", system-ui, -apple-system, "Segoe UI", sans-serif`;
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.38)';
+  ctx.fillRect(0, height - stripH, width, stripH);
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+  ctx.font = `500 ${fontSize}px "Inter", system-ui, -apple-system, "Segoe UI", sans-serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  const text = `KROWN CREATIVE FACTORY  •  ${tagline}`;
-  // Fall back to the brand name alone when the tagline doesn't fit.
-  const label = ctx.measureText(text).width <= width * 0.94 ? text : 'KROWN CREATIVE FACTORY';
-  ctx.fillText(label, width / 2, height - bandH / 2, width * 0.94);
+  ctx.fillText(footer, width / 2, height - stripH / 2, width * 0.94);
   ctx.restore();
 }
 
-type BrandPainter = (
-  ctx: CanvasRenderingContext2D,
-  width: number,
-  height: number,
-  mark: HTMLImageElement,
-) => void;
-
-/** Draws `original` onto a canvas, lets `paint` add branding, and re-encodes it. */
-async function renderBranded(original: Blob, paint: BrandPainter): Promise<Blob> {
+/** Draws `original` (optionally downscaled) with the watermark and re-encodes it. */
+async function renderWatermarked(original: Blob, footer: string, maxSide: number): Promise<Blob> {
   const objectUrl = URL.createObjectURL(original);
+  const canvas = document.createElement('canvas');
+  let img: HTMLImageElement | null = null;
   try {
-    const [img, mark] = await Promise.all([loadImage(objectUrl), getWatermark()]);
+    const [loaded, mark] = await Promise.all([loadImage(objectUrl), getWatermark()]);
+    img = loaded;
 
     let { naturalWidth: width, naturalHeight: height } = img;
     if (!width || !height) throw new DownloadError('Design has no dimensions');
-    const scale = Math.min(1, MAX_CANVAS_SIDE / Math.max(width, height));
+    const scale = Math.min(1, maxSide / Math.max(width, height));
     width = Math.round(width * scale);
     height = Math.round(height * scale);
 
-    const canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
     const ctx = canvas.getContext('2d');
@@ -165,93 +143,53 @@ async function renderBranded(original: Blob, paint: BrandPainter): Promise<Blob>
 
     ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(img, 0, 0, width, height);
-    paint(ctx, width, height, mark);
+    drawWatermark(ctx, width, height, mark, footer);
 
-    // Preserve the source format: JPEGs stay JPEG, everything else becomes PNG.
-    const outType = original.type === 'image/jpeg' ? 'image/jpeg' : 'image/png';
+    // JPEG keeps previews small; PNG sources keep transparency.
+    const outType = original.type === 'image/png' ? 'image/png' : 'image/jpeg';
     const blob = await new Promise<Blob | null>((resolve) =>
-      canvas.toBlob(resolve, outType, outType === 'image/jpeg' ? 0.92 : undefined),
+      canvas.toBlob(resolve, outType, outType === 'image/jpeg' ? 0.9 : undefined),
     );
-    if (!blob) throw new DownloadError('Could not encode the branded file');
+    if (!blob) throw new DownloadError('Could not encode the watermarked file');
     return blob;
   } finally {
+    // Release decoded pixels and the canvas backing store right away — mobile
+    // browsers kill tabs that hold on to large bitmaps.
+    canvas.width = 0;
+    canvas.height = 0;
+    if (img) img.src = '';
     URL.revokeObjectURL(objectUrl);
   }
-}
-
-/** Small, unobtrusive "logo + krowncf.com" tag in the bottom-right corner. */
-function drawBrandBadge(
-  ctx: CanvasRenderingContext2D,
-  width: number,
-  height: number,
-  mark: HTMLImageElement,
-  label: string,
-) {
-  const shortSide = Math.min(width, height);
-  const markH = Math.max(14, shortSide * 0.05);
-  const markW = markH * (mark.naturalWidth / mark.naturalHeight);
-  const fontSize = Math.max(10, Math.round(markH * 0.5));
-  const pad = Math.round(markH * 0.35);
-  const margin = Math.round(shortSide * 0.025);
-
-  ctx.save();
-  ctx.font = `600 ${fontSize}px "Inter", system-ui, -apple-system, "Segoe UI", sans-serif`;
-  const textW = ctx.measureText(label).width;
-  const boxW = pad + markW + pad * 0.8 + textW + pad;
-  const boxH = markH + pad * 2;
-  const x = width - margin - boxW;
-  const y = height - margin - boxH;
-
-  ctx.fillStyle = 'rgba(10, 10, 10, 0.6)';
-  if (typeof ctx.roundRect === 'function') {
-    ctx.beginPath();
-    ctx.roundRect(x, y, boxW, boxH, boxH / 2);
-    ctx.fill();
-  } else {
-    ctx.fillRect(x, y, boxW, boxH); // older Safari/Firefox
-  }
-  ctx.drawImage(mark, x + pad, y + pad, markW, markH);
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(label, x + pad + markW + pad * 0.8, y + boxH / 2);
-  ctx.restore();
-}
-
-async function watermarkBlob(original: Blob, tagline: string): Promise<Blob> {
-  return renderBranded(original, (ctx, w, h, mark) => drawWatermark(ctx, w, h, mark, tagline));
-}
-
-/**
- * Branded image for sharing. Free users share the full watermark; Pro users share
- * the clean design with only a small Krown corner badge, so attribution always travels.
- */
-export async function createShareImage(imageUrl: string, premium: boolean, siteLabel: string): Promise<Blob> {
-  const original = await fetchOriginal(imageUrl);
-  return renderBranded(original, (ctx, w, h, mark) => {
-    if (premium) drawBrandBadge(ctx, w, h, mark, siteLabel);
-    else drawWatermark(ctx, w, h, mark, siteLabel);
-  });
 }
 
 export interface DesignDownloadOptions {
   imageUrl: string;
   title: string;
-  watermark: boolean;
-  /** Short line printed in the watermark ribbon (localised by the caller). */
-  tagline: string;
+  /** Design id, printed in the watermark footer. */
+  designId: string;
+  mode: 'clean' | 'watermarked' | 'preview';
 }
 
+const footerFor = (designId: string) => `Krown Creative Factory  ·  krowncf.com  ·  ID: ${designId}`;
+
 /** Fetches the design, watermarks it when required, and triggers the browser download. */
-export async function downloadDesign({ imageUrl, title, watermark, tagline }: DesignDownloadOptions) {
+export async function downloadDesign({ imageUrl, title, designId, mode }: DesignDownloadOptions) {
   const original = await fetchOriginal(imageUrl);
   const base = slugify(title);
 
-  if (!watermark) {
+  if (mode === 'clean') {
     // Clean download: the original bytes, untouched (full resolution, original quality).
     saveBlob(original, `${base}.${extensionFor(original.type)}`);
     return;
   }
 
-  const marked = await watermarkBlob(original, tagline);
-  saveBlob(marked, `${base}-krown-preview.${extensionFor(marked.type)}`);
+  const maxSide = mode === 'preview' ? PREVIEW_MAX_SIDE : MAX_CANVAS_SIDE;
+  const marked = await renderWatermarked(original, footerFor(designId), maxSide);
+  saveBlob(marked, `${base}-krowncf-${mode === 'preview' ? 'preview' : 'watermarked'}.${extensionFor(marked.type)}`);
+}
+
+/** Watermarked preview as a Blob (used for "share to Status" on desktop). */
+export async function createPreviewBlob(imageUrl: string, designId: string) {
+  const original = await fetchOriginal(imageUrl);
+  return renderWatermarked(original, footerFor(designId), PREVIEW_MAX_SIDE);
 }

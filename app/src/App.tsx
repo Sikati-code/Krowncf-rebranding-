@@ -6,6 +6,8 @@ import Latest from './pages/Latest'
 import CategoryPage from './pages/CategoryPage'
 import DesignDetail from './pages/DesignDetail'
 import AllDesigns from './pages/AllDesigns'
+import Pricing from './pages/Pricing'
+import Account from './pages/Account'
 
 export default function App() {
   return (
@@ -17,6 +19,8 @@ export default function App() {
       <Route path="/categories/:slug" element={<CategoryPage />} />
       <Route path="/design/:id" element={<DesignDetail />} />
       <Route path="/all-designs" element={<AllDesigns />} />
+      <Route path="/pricing" element={<Pricing />} />
+      <Route path="/account" element={<Account />} />
     </Routes>
   )
 }

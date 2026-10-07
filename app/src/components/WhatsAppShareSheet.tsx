@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Link2, CircleDashed, Users, Loader2, Info } from 'lucide-react';
 import { toast } from 'sonner';
@@ -7,34 +7,26 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { useIsMobile } from '../hooks/use-mobile';
 import { useModalA11y } from '../hooks/use-modal-a11y';
 import { recordShare, whatsappShareUrl } from '../lib/share';
-import { saveBlob, extensionFor } from '../lib/watermark';
+import { saveBlob, extensionFor, createPreviewBlob, slugify } from '../lib/watermark';
 
 export interface ShareItem {
-  /** Key used for share tracking (design id, `logo-<id>`, `course-<id>`). */
+  /** Key used for share tracking (design id or `logo-<id>`). */
   trackId: string;
+  /** Route id of the design (printed on the preview watermark). */
+  designId: string;
   title: string;
   /** Full branded message (title, line, attribution, link, krowncf.com). */
   message: string;
   /** Canonical URL of the shared page. */
   url: string;
-  /** Base filename for the branded image, without extension. */
-  fileName: string;
-  /** Produces the branded image (watermark / badge / course card). */
-  makeImage: () => Promise<Blob>;
-  /** Watermark note shown under the preview; omitted for course cards. */
-  note?: string;
+  /** Design image (thumbnail here; watermarked preview for Status). */
+  image: string;
 }
 
 interface WhatsAppShareSheetProps {
   item: ShareItem | null;
   onClose: () => void;
 }
-
-// Phones and tablets: the OS share sheet lists WhatsApp and can attach the image.
-const prefersNativeShare = () =>
-  typeof navigator !== 'undefined' &&
-  typeof navigator.share === 'function' &&
-  window.matchMedia('(pointer: coarse)').matches;
 
 async function copyText(text: string) {
   try {
@@ -55,6 +47,11 @@ async function copyText(text: string) {
   }
 }
 
+/**
+ * Desktop share options. Phones skip this sheet entirely and share instantly
+ * (see useShareItems). Nothing heavy runs on open: the watermarked preview is
+ * only built when the user picks "Status".
+ */
 export default function WhatsAppShareSheet({ item: openItem, onClose }: WhatsAppShareSheetProps) {
   const { t } = useLanguage();
   // Keep the last item rendered while the sheet animates out.
@@ -64,88 +61,35 @@ export default function WhatsAppShareSheet({ item: openItem, onClose }: WhatsApp
   const isOpen = openItem !== null;
   const panelRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
-  // Branded image prepared for a specific item; stale results are ignored.
-  const [prepared, setPrepared] = useState<{ for: ShareItem; file?: File; url?: string } | null>(null);
-  const current = prepared && prepared.for === item ? prepared : null;
-  const file = current?.file ?? null;
-  const previewUrl = current?.url ?? null;
-  const imageState: 'loading' | 'ready' | 'error' = !current ? 'loading' : current.file ? 'ready' : 'error';
-  const native = isOpen && prefersNativeShare();
+  const [busy, setBusy] = useState(false);
 
   useModalA11y(isOpen, onClose, panelRef, closeRef);
 
-  // Prepare the branded image as soon as the sheet opens, so navigator.share()
-  // can be called synchronously from the tap (iOS requires a fresh user gesture).
-  useEffect(() => {
-    if (!openItem) return;
-    const item = openItem;
-    let cancelled = false;
-    let url: string | null = null;
-    item
-      .makeImage()
-      .then((blob) => {
-        if (cancelled) return;
-        url = URL.createObjectURL(blob);
-        const file = new File([blob], `${item.fileName}.${extensionFor(blob.type)}`, { type: blob.type });
-        setPrepared({ for: item, file, url });
-      })
-      .catch((err) => {
-        console.warn('Share image failed:', err);
-        if (!cancelled) setPrepared({ for: item });
-      });
-    return () => {
-      cancelled = true;
-      if (url) URL.revokeObjectURL(url);
-    };
-  }, [openItem]);
-
   if (!item) return null;
 
-  const shared = () => {
+  const shareToChat = () => {
+    window.open(whatsappShareUrl(item.message), '_blank', 'noopener,noreferrer');
     recordShare(item.trackId);
     toast.success(t('share.toastShared'));
     onClose();
   };
 
-  const canShareFile = !!file && typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] });
-
-  const nativeShare = async (withFile: boolean) => {
-    try {
-      await navigator.share(
-        withFile && file ? { files: [file], text: item.message, title: item.title } : { text: item.message, title: item.title },
-      );
-      shared();
-    } catch (err) {
-      if ((err as DOMException)?.name === 'AbortError') return; // user closed the sheet
-      console.warn('Native share failed:', err);
-      window.open(whatsappShareUrl(item.message), '_blank', 'noopener,noreferrer');
-      shared();
-    }
-  };
-
-  const shareToChat = () => {
-    if (native) {
-      void nativeShare(canShareFile);
-      return;
-    }
-    window.open(whatsappShareUrl(item.message), '_blank', 'noopener,noreferrer');
-    shared();
-  };
-
+  // WhatsApp Status can't be targeted by URL: hand over the watermarked preview + caption.
   const shareToStatus = async () => {
-    if (native && canShareFile) {
-      void nativeShare(true);
-      return;
-    }
-    // Status can't be targeted by URL: hand the user the branded image + caption.
+    if (busy) return;
+    setBusy(true);
     try {
-      if (file) saveBlob(file, file.name);
+      const blob = await createPreviewBlob(item.image, item.designId);
+      saveBlob(blob, `${slugify(item.title)}-krowncf-preview.${extensionFor(blob.type)}`);
       await copyText(item.message);
       recordShare(item.trackId);
       toast.success(t('share.toastStatusWeb'), { duration: 7000 });
       onClose();
-    } catch {
+    } catch (err) {
+      console.warn('Status share failed:', err);
       toast.error(t('share.toastError'));
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -160,30 +104,9 @@ export default function WhatsAppShareSheet({ item: openItem, onClose }: WhatsApp
   };
 
   const options = [
-    {
-      key: 'chat',
-      icon: Users,
-      label: t('share.contact'),
-      hint: native ? t('share.contactHintNative') : t('share.contactHintWeb'),
-      onClick: shareToChat,
-      accent: true,
-    },
-    {
-      key: 'status',
-      icon: CircleDashed,
-      label: t('share.status'),
-      hint: native && canShareFile ? t('share.statusHintNative') : t('share.statusHintWeb'),
-      onClick: shareToStatus,
-      accent: true,
-    },
-    {
-      key: 'copy',
-      icon: Link2,
-      label: t('share.copy'),
-      hint: t('share.copyHint'),
-      onClick: copyLink,
-      accent: false,
-    },
+    { key: 'chat', icon: Users, label: t('share.contact'), hint: t('share.contactHintWeb'), onClick: shareToChat, accent: true },
+    { key: 'status', icon: busy ? Loader2 : CircleDashed, label: t('share.status'), hint: t('share.statusHintWeb'), onClick: shareToStatus, accent: true },
+    { key: 'copy', icon: Link2, label: t('share.copy'), hint: t('share.copyHint'), onClick: copyLink, accent: false },
   ];
 
   return (
@@ -236,29 +159,15 @@ export default function WhatsAppShareSheet({ item: openItem, onClose }: WhatsApp
           </div>
 
           <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-5 md:px-6 space-y-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
-            {/* Branded preview */}
-            <div className="rounded-2xl bg-black/30 border border-white/10 p-3">
-              <div className="h-40 sm:h-48 flex items-center justify-center rounded-xl overflow-hidden bg-white/5">
-                {imageState === 'loading' && (
-                  <span className="flex items-center gap-2 text-xs text-white/50" role="status">
-                    <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
-                    {t('share.preparing')}
-                  </span>
-                )}
-                {imageState === 'ready' && previewUrl && (
-                  <motion.img
-                    initial={{ opacity: 0, scale: 0.97 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    src={previewUrl}
-                    alt={t('share.previewAlt')}
-                    className="h-full w-full object-contain"
-                  />
-                )}
-                {imageState === 'error' && (
-                  <span className="px-4 text-center text-xs text-white/50">{t('share.previewError')}</span>
-                )}
-              </div>
-              <p className="mt-3 text-xs text-white/60 whitespace-pre-line line-clamp-4">{item.message}</p>
+            {/* Message preview */}
+            <div className="flex gap-3 rounded-2xl bg-black/30 border border-white/10 p-3">
+              <img
+                src={item.image}
+                alt=""
+                loading="lazy"
+                className="w-16 h-20 rounded-lg object-cover bg-white/5 shrink-0"
+              />
+              <p className="text-xs text-white/60 whitespace-pre-line line-clamp-5">{item.message}</p>
             </div>
 
             {/* Options */}
@@ -273,6 +182,8 @@ export default function WhatsAppShareSheet({ item: openItem, onClose }: WhatsApp
                   <motion.button
                     type="button"
                     onClick={o.onClick}
+                    disabled={busy && o.key === 'status'}
+                    aria-busy={busy && o.key === 'status'}
                     whileTap={{ scale: 0.97 }}
                     className={`w-full flex items-center gap-3 min-h-[56px] px-4 py-2.5 rounded-xl border text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#25D366] ${
                       o.accent
@@ -285,7 +196,7 @@ export default function WhatsAppShareSheet({ item: openItem, onClose }: WhatsApp
                         o.accent ? 'bg-[#25D366]/15 text-[#25D366]' : 'bg-white/5 text-white/70'
                       }`}
                     >
-                      <o.icon className="w-5 h-5" aria-hidden="true" />
+                      <o.icon className={`w-5 h-5 ${busy && o.key === 'status' ? 'animate-spin' : ''}`} aria-hidden="true" />
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="block text-sm font-semibold text-white">{o.label}</span>
@@ -299,8 +210,7 @@ export default function WhatsAppShareSheet({ item: openItem, onClose }: WhatsApp
             <p className="flex items-start gap-2 text-[11px] text-white/40">
               <Info className="w-3.5 h-3.5 mt-px shrink-0" aria-hidden="true" />
               <span>
-                {t('share.subtitle')} {item.note ? `${item.note} ` : ''}
-                {t('share.quotaNote')}
+                {t('share.subtitle')} {t('share.quotaNote')}
               </span>
             </p>
           </div>

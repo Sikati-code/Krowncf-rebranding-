@@ -1,147 +1,78 @@
-// WhatsApp sharing helpers: canonical URLs, branded share messages, the course
-// share card, and local share counts.
+// WhatsApp sharing helpers: canonical URLs, branded share messages, the instant
+// native/WhatsApp share used on phones, and local share counts.
 
-import { getWatermark, DownloadError } from './watermark';
 import { SITE_URL } from './og';
 
 export { SITE_URL, BRAND_NAME } from './og';
-export const SITE_LABEL = 'krowncf.com';
 
 type Lang = 'en' | 'fr';
 
 export const designUrl = (id: string) => `${SITE_URL}/design/${encodeURIComponent(id)}`;
-export const courseUrl = () => `${SITE_URL}/#training`;
 
 export const whatsappShareUrl = (text: string) => `https://wa.me/?text=${encodeURIComponent(text)}`;
 
 const COPY = {
   en: {
-    designAttribution: '🔥 Found this on Krown Creative Factory',
-    designCta: '👉 Check them out for premium African designs:',
-    courseAttribution: '🔥 Training by Krown Creative Factory',
-    courseCta: '👉 Enroll now:',
-    weeks: 'weeks',
+    attribution: '🔥 Found this on Krown Creative Factory',
+    cta: '👉 Check them out for premium African designs:',
   },
   fr: {
-    designAttribution: '🔥 Trouvé sur Krown Creative Factory',
-    designCta: '👉 Découvrez leurs designs africains premium :',
-    courseAttribution: '🔥 Formation par Krown Creative Factory',
-    courseCta: "👉 Inscrivez-vous dès maintenant :",
-    weeks: 'semaines',
+    attribution: '🔥 Trouvé sur Krown Creative Factory',
+    cta: '👉 Découvrez leurs designs africains premium :',
   },
 };
 
 /** Every share message carries the title, a line, Krown attribution, the item link and krowncf.com. */
 export function buildDesignMessage(lang: Lang, title: string, line: string, url: string) {
   const c = COPY[lang];
-  return [`✨ *${title}*`, line, '', c.designAttribution, `${c.designCta} ${url}`, '', `🌐 ${SITE_URL}`].join('\n');
+  return [`✨ *${title}*`, line, '', c.attribution, `${c.cta} ${url}`, '', `🌐 ${SITE_URL}`].join('\n');
 }
 
-export function buildCourseMessage(lang: Lang, course: { title: string; price: string; weeks: number; line: string }) {
-  const c = COPY[lang];
-  return [
-    `🎓 *${course.title}* — ${course.price} · ${course.weeks} ${c.weeks}`,
-    course.line,
-    '',
-    c.courseAttribution,
-    `${c.courseCta} ${courseUrl()}`,
-    '',
-    `🌐 ${SITE_URL}`,
-  ].join('\n');
-}
+/** Phones/tablets: share straight from the tap via the OS sheet or the WhatsApp app. */
+export const isTouchDevice = () =>
+  typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
 
-function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number) {
-  const words = text.split(/\s+/);
-  const lines: string[] = [];
-  let line = '';
-  for (const word of words) {
-    const next = line ? `${line} ${word}` : word;
-    if (ctx.measureText(next).width > maxWidth && line) {
-      lines.push(line);
-      line = word;
-    } else {
-      line = next;
-    }
-  }
-  if (line) lines.push(line);
-  return lines;
-}
+let shareInFlight = false;
 
-/** 1080×1080 branded card used as the image when sharing a training course. */
-export async function createCourseCard(course: { title: string; price: string; weeks: number; line: string }, lang: Lang): Promise<Blob> {
-  const mark = await getWatermark();
-  const size = 1080;
-  const canvas = document.createElement('canvas');
-  canvas.width = size;
-  canvas.height = size;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) throw new DownloadError('Canvas is not supported');
-
-  // Brand background: Krown black with red/orange glows.
-  ctx.fillStyle = '#0A0A0A';
-  ctx.fillRect(0, 0, size, size);
-  const glow = (x: number, y: number, r: number, color: string) => {
-    const g = ctx.createRadialGradient(x, y, 0, x, y, r);
-    g.addColorStop(0, color);
-    g.addColorStop(1, 'rgba(10,10,10,0)');
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 0, size, size);
+/**
+ * Instant mobile share. Must be called synchronously from a tap handler:
+ * no awaits, no image processing and no files before navigator.share(), so the
+ * share sheet opens immediately and the browser keeps the user gesture.
+ * Text + link only — the link's Open Graph preview carries the image and brand.
+ * Falls back to the WhatsApp deep link when the Web Share API is missing or fails.
+ * Resolves 'shared', 'cancelled' or 'whatsapp' (deep link opened).
+ */
+export function shareInstantly(title: string, message: string): Promise<'shared' | 'cancelled' | 'whatsapp'> {
+  const openWhatsApp = () => {
+    // Same-tab navigation: popups are blocked inside in-app browsers (Instagram, Facebook…).
+    window.location.href = whatsappShareUrl(message);
+    return 'whatsapp' as const;
   };
-  glow(size * 0.85, size * 0.15, size * 0.6, 'rgba(220,38,38,0.35)');
-  glow(size * 0.1, size * 0.95, size * 0.55, 'rgba(232,93,4,0.25)');
 
-  const font = '"Inter", system-ui, -apple-system, "Segoe UI", sans-serif';
-  const left = 90;
-  const maxW = size - left * 2;
-
-  // Logo on a white pill so the red/black mark reads on the dark background.
-  const logoW = 420;
-  const logoH = logoW * (mark.naturalHeight / mark.naturalWidth);
-  ctx.fillStyle = 'rgba(255,255,255,0.95)';
-  ctx.beginPath();
-  if (typeof ctx.roundRect === 'function') ctx.roundRect(left - 24, 90 - 18, logoW + 48, logoH + 36, 28);
-  else ctx.rect(left - 24, 90 - 18, logoW + 48, logoH + 36);
-  ctx.fill();
-  ctx.drawImage(mark, left, 90, logoW, logoH);
-
-  ctx.textBaseline = 'alphabetic';
-  ctx.fillStyle = '#E85D04';
-  ctx.font = `600 34px ${font}`;
-  ctx.fillText(lang === 'fr' ? 'FORMATION & ATELIERS' : 'TRAINING & WORKSHOPS', left, 400);
-
-  ctx.fillStyle = '#FFFFFF';
-  ctx.font = `800 84px ${font}`;
-  let y = 500;
-  for (const line of wrapText(ctx, course.title, maxW).slice(0, 2)) {
-    ctx.fillText(line, left, y);
-    y += 96;
+  if (shareInFlight) return Promise.resolve('cancelled'); // ignore double taps
+  if (typeof navigator === 'undefined' || typeof navigator.share !== 'function') {
+    return Promise.resolve(openWhatsApp());
   }
 
-  ctx.fillStyle = 'rgba(255,255,255,0.65)';
-  ctx.font = `400 36px ${font}`;
-  y += 10;
-  for (const line of wrapText(ctx, course.line, maxW).slice(0, 3)) {
-    ctx.fillText(line, left, y);
-    y += 50;
+  shareInFlight = true;
+  let pending: Promise<void>;
+  try {
+    pending = navigator.share({ title, text: message });
+  } catch {
+    shareInFlight = false;
+    return Promise.resolve(openWhatsApp());
   }
-
-  ctx.fillStyle = '#E85D04';
-  ctx.font = `800 72px ${font}`;
-  ctx.fillText(course.price, left, 900);
-  const priceW = ctx.measureText(course.price).width;
-  ctx.fillStyle = 'rgba(255,255,255,0.7)';
-  ctx.font = `500 36px ${font}`;
-  ctx.fillText(`· ${course.weeks} ${COPY[lang].weeks}`, left + priceW + 24, 900);
-
-  ctx.fillStyle = 'rgba(255,255,255,0.12)';
-  ctx.fillRect(left, 950, maxW, 2);
-  ctx.fillStyle = '#FFFFFF';
-  ctx.font = `700 34px ${font}`;
-  ctx.fillText(SITE_LABEL, left, 1005);
-
-  const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'));
-  if (!blob) throw new DownloadError('Could not encode the course card');
-  return blob;
+  return pending
+    .then(() => 'shared' as const)
+    .catch((err: unknown) => {
+      const name = (err as DOMException)?.name;
+      if (name === 'AbortError') return 'cancelled' as const; // user closed the sheet
+      console.warn('Native share failed, using WhatsApp link:', err);
+      return openWhatsApp();
+    })
+    .finally(() => {
+      shareInFlight = false;
+    });
 }
 
 // --- Share tracking -------------------------------------------------------

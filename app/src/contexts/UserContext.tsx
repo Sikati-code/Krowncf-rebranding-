@@ -2,7 +2,9 @@
 
 import { createContext, useContext, useState, useEffect } from 'react';
 
-export type UserTier = 'guest' | 'basic' | 'pro' | 'advanced';
+// Credit-pack model: users buy packs of download credits. One credit = one clean
+// download. Credits never expire. Re-downloading a design you already paid for
+// is free.
 
 export interface DownloadRecord {
   designId: string;
@@ -11,49 +13,51 @@ export interface DownloadRecord {
   downloadedAt: string;
 }
 
+export interface CreditPurchase {
+  packId: string;
+  credits: number;
+  purchasedAt: string;
+}
+
 interface User {
   id: string;
   name: string;
   email: string;
-  tier: UserTier;
-  downloadsUsed: number;
-  maxDownloads: number;
-  downloadedDesigns: string[];
+  signedIn: boolean;
+  credits: number;
+  /** Designs paid for with a credit — clean re-downloads are free. */
+  ownedDesigns: string[];
   downloadHistory: DownloadRecord[];
+  purchases: CreditPurchase[];
 }
 
-export type DownloadStatus = 'signin' | 'limit' | 'redownload' | 'download';
+export type CleanStatus = 'signin' | 'owned' | 'credit' | 'nocredits';
 
 interface UserContextType {
   user: User;
-  updateUser: (user: User) => void;
   signIn: (email: string) => void;
-  canDownload: (designId: string) => { allowed: boolean; status: DownloadStatus };
+  signOut: () => void;
+  /** Whether a clean download of this design is possible, and how it would be paid. */
+  cleanStatus: (designId: string) => CleanStatus;
+  /** Records a download; consumes one credit for a first clean download of a design. */
   recordDownload: (designId: string, title: string, watermarked: boolean) => void;
-  getRemainingDownloads: () => number;
-  /** Pro and Advanced subscribers receive clean, watermark-free files. */
-  isPremium: boolean;
+  /** Adds credits after a confirmed pack purchase (call from your payment callback). */
+  addCredits: (packId: string, credits: number) => void;
+  /** Users with credits (or owned designs) get clean, watermark-free files. */
+  hasCredits: boolean;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
-
-// Download limits by tier
-export const TIER_LIMITS = {
-  guest: { maxDownloads: 0, label: 'Guest', labelFr: 'Invité' },
-  basic: { maxDownloads: 12, label: 'Free', labelFr: 'Gratuit' },
-  pro: { maxDownloads: Infinity, label: 'Pro', labelFr: 'Pro' },
-  advanced: { maxDownloads: Infinity, label: 'Advanced', labelFr: 'Avancé' },
-};
 
 const GUEST_USER: User = {
   id: 'guest',
   name: 'Guest',
   email: '',
-  tier: 'guest',
-  downloadsUsed: 0,
-  maxDownloads: 0,
-  downloadedDesigns: [],
+  signedIn: false,
+  credits: 0,
+  ownedDesigns: [],
   downloadHistory: [],
+  purchases: [],
 };
 
 const MAX_HISTORY = 100;
@@ -63,14 +67,18 @@ function loadUser(): User {
     const saved = localStorage.getItem('user');
     if (!saved) return GUEST_USER;
     const parsed = JSON.parse(saved);
-    if (!parsed || !(parsed.tier in TIER_LIMITS)) return GUEST_USER;
-    // Older saved users predate download history; ensure every field exists.
-    const user: User = { ...GUEST_USER, ...parsed };
-    // Ensure guest users have correct limits
-    if (user.tier === 'guest') {
-      user.maxDownloads = 0;
-    }
-    return user;
+    if (!parsed || typeof parsed !== 'object') return GUEST_USER;
+    // Migrate users saved under the old subscription model (tier-based).
+    const signedIn = typeof parsed.signedIn === 'boolean' ? parsed.signedIn : !!parsed.tier && parsed.tier !== 'guest';
+    return {
+      ...GUEST_USER,
+      ...parsed,
+      signedIn,
+      credits: Number.isFinite(parsed.credits) ? Math.max(0, parsed.credits) : 0,
+      ownedDesigns: Array.isArray(parsed.ownedDesigns) ? parsed.ownedDesigns : [],
+      downloadHistory: Array.isArray(parsed.downloadHistory) ? parsed.downloadHistory : [],
+      purchases: Array.isArray(parsed.purchases) ? parsed.purchases : [],
+    };
   } catch {
     return GUEST_USER;
   }
@@ -81,80 +89,57 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     try {
-      localStorage.setItem('user', JSON.stringify(user));
+      const { id, name, email, signedIn, credits, ownedDesigns, downloadHistory, purchases } = user;
+      localStorage.setItem('user', JSON.stringify({ id, name, email, signedIn, credits, ownedDesigns, downloadHistory, purchases }));
     } catch {
       // Storage unavailable (private mode / quota) — keep the in-memory session.
     }
   }, [user]);
 
-  const updateUser = (newUser: User) => {
-    setUser(newUser);
-  };
-
-  // Mock authentication: signing in promotes a guest to the free (Basic) tier.
-  // Existing paid tiers are kept.
+  // Mock authentication (no backend yet): signing in keeps any existing credits.
   const signIn = (email: string) => {
-    setUser((current) => {
-      if (current.tier !== 'guest') return { ...current, email: email || current.email };
-      const name = email.split('@')[0] || 'Creative';
-      return {
-        ...current,
-        id: email || `user-${Date.now()}`,
-        name,
-        email,
-        tier: 'basic',
-        maxDownloads: TIER_LIMITS.basic.maxDownloads,
-      };
-    });
+    setUser((current) => ({
+      ...current,
+      id: email || current.id || `user-${Date.now()}`,
+      name: email.split('@')[0] || current.name || 'Creative',
+      email: email || current.email,
+      signedIn: true,
+    }));
   };
 
-  const canDownload = (designId: string): { allowed: boolean; status: DownloadStatus } => {
-    // Guest users cannot download
-    if (user.tier === 'guest') {
-      return { allowed: false, status: 'signin' };
-    }
+  const signOut = () => setUser((current) => ({ ...current, signedIn: false }));
 
-    // Already downloaded - allow re-download without consuming quota
-    if (user.downloadedDesigns.includes(designId)) {
-      return { allowed: true, status: 'redownload' };
-    }
-
-    // Check if user has reached their limit
-    if (user.downloadsUsed >= TIER_LIMITS[user.tier].maxDownloads) {
-      return { allowed: false, status: 'limit' };
-    }
-
-    return { allowed: true, status: 'download' };
+  const cleanStatus = (designId: string): CleanStatus => {
+    if (!user.signedIn) return 'signin';
+    if (user.ownedDesigns.includes(designId)) return 'owned';
+    return user.credits > 0 ? 'credit' : 'nocredits';
   };
 
   const recordDownload = (designId: string, title: string, watermarked: boolean) => {
     setUser((current) => {
-      const isNew = !current.downloadedDesigns.includes(designId);
-      const record: DownloadRecord = {
-        designId,
-        title,
-        watermarked,
-        downloadedAt: new Date().toISOString(),
-      };
+      const firstCleanDownload = !watermarked && !current.ownedDesigns.includes(designId);
+      const record: DownloadRecord = { designId, title, watermarked, downloadedAt: new Date().toISOString() };
       return {
         ...current,
-        downloadsUsed: isNew ? current.downloadsUsed + 1 : current.downloadsUsed,
-        downloadedDesigns: isNew ? [...current.downloadedDesigns, designId] : current.downloadedDesigns,
+        credits: firstCleanDownload ? Math.max(0, current.credits - 1) : current.credits,
+        ownedDesigns: firstCleanDownload ? [...current.ownedDesigns, designId] : current.ownedDesigns,
         downloadHistory: [record, ...current.downloadHistory].slice(0, MAX_HISTORY),
       };
     });
   };
 
-  const getRemainingDownloads = () => {
-    return Math.max(0, TIER_LIMITS[user.tier].maxDownloads - user.downloadsUsed);
+  const addCredits = (packId: string, credits: number) => {
+    setUser((current) => ({
+      ...current,
+      credits: current.credits + credits,
+      purchases: [{ packId, credits, purchasedAt: new Date().toISOString() }, ...current.purchases],
+    }));
   };
 
-  const isPremium = user.tier === 'pro' || user.tier === 'advanced';
+  const hasCredits = user.signedIn && user.credits > 0;
 
   return (
-    <UserContext.Provider
-      value={{ user, updateUser, signIn, canDownload, recordDownload, getRemainingDownloads, isPremium }}
-    >
+    <UserContext.Provider value={{ user, signIn, signOut, cleanStatus, recordDownload, addCredits, hasCredits }}>
       {children}
     </UserContext.Provider>
   );

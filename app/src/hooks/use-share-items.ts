@@ -1,15 +1,13 @@
 import { useCallback, useState, useSyncExternalStore } from 'react';
+import { toast } from 'sonner';
 import { useLanguage } from '../contexts/LanguageContext';
-import { useUser } from '../contexts/UserContext';
-import { createShareImage, slugify } from '../lib/watermark';
 import {
-  SITE_LABEL,
-  buildCourseMessage,
   buildDesignMessage,
-  createCourseCard,
   designUrl,
-  courseUrl,
   getShareCount,
+  isTouchDevice,
+  recordShare,
+  shareInstantly,
 } from '../lib/share';
 import type { ShareItem } from '../components/WhatsAppShareSheet';
 
@@ -23,47 +21,35 @@ export interface ShareableDesign {
   image: string;
 }
 
-export interface ShareableCourse {
-  id: number;
-  title: string;
-  price: string;
-  weeks: number;
-  line: string;
-}
-
-/** Builds branded WhatsApp share items in the current language and for the current tier. */
+/**
+ * Design sharing. On phones a tap opens the native share sheet (or WhatsApp)
+ * immediately; on desktop it opens the share options sheet.
+ */
 export function useShareItems() {
   const { language, t } = useLanguage();
-  const { isPremium } = useUser();
   const [item, setItem] = useState<ShareItem | null>(null);
   const close = useCallback(() => setItem(null), []);
 
   const shareDesign = (design: ShareableDesign) => {
     const url = designUrl(design.id);
-    setItem({
-      trackId: design.trackId,
-      title: design.title,
-      url,
-      message: buildDesignMessage(language, design.title, design.line, url),
-      fileName: `${slugify(design.title)}-krowncf`,
-      // Free users share the full watermark; Pro users share clean + small badge.
-      makeImage: () => createShareImage(design.image, isPremium, SITE_LABEL),
-      note: isPremium ? t('share.notePro') : t('share.noteFree'),
-    });
+    const message = buildDesignMessage(language, design.title, design.line, url);
+
+    if (isTouchDevice()) {
+      // Called synchronously inside the tap handler — nothing async before navigator.share().
+      shareInstantly(design.title, message)
+        .then((result) => {
+          if (result === 'cancelled') return;
+          recordShare(design.trackId);
+          if (result === 'shared') toast.success(t('share.toastShared'));
+        })
+        .catch(() => toast.error(t('share.toastError')));
+      return;
+    }
+
+    setItem({ trackId: design.trackId, designId: design.id, title: design.title, url, message, image: design.image });
   };
 
-  const shareCourse = (course: ShareableCourse) => {
-    setItem({
-      trackId: `course-${course.id}`,
-      title: course.title,
-      url: courseUrl(),
-      message: buildCourseMessage(language, course),
-      fileName: `${slugify(course.title)}-krowncf-course`,
-      makeImage: () => createCourseCard(course, language),
-    });
-  };
-
-  return { item, close, shareDesign, shareCourse };
+  return { item, close, shareDesign };
 }
 
 /** Live share count for one item (updates when this browser records a share). */

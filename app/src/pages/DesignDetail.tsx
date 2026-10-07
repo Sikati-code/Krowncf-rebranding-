@@ -5,7 +5,7 @@ import { logos } from '../data/logos';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Star, Download, TrendingUp, Sparkles, ArrowLeft } from 'lucide-react';
 import DownloadButton from '../components/DownloadButton';
-import UpgradeModal from '../components/UpgradeModal';
+import PacksModal from '../components/PacksModal';
 import WhatsAppShareButton from '../components/WhatsAppShareButton';
 import WhatsAppShareSheet from '../components/WhatsAppShareSheet';
 import WhatsAppIcon from '../components/icons/WhatsAppIcon';
@@ -154,13 +154,13 @@ export default function DesignDetail() {
                 </div>
               </div>
               
-              {/* Download (category designs only) + WhatsApp share (every design) */}
+              {/* Download + Download Preview (category designs) and WhatsApp share (every design) */}
               {shareable && (() => {
                 const shareButton = (
                   <WhatsAppShareButton label={t('share.button')} onClick={() => share.shareDesign(shareable)} />
                 );
                 return design ? (
-                  <DownloadButton design={design} onUpgrade={setUpgradeReason} secondaryAction={shareButton} />
+                  <DownloadButton design={design} onNeedCredits={setUpgradeReason} shareAction={shareButton} />
                 ) : (
                   <div className="mb-6">{shareButton}</div>
                 );
@@ -258,8 +258,8 @@ export default function DesignDetail() {
       
       <WhatsAppShareSheet item={share.item} onClose={share.close} />
 
-      {/* Upgrade Modal */}
-      <UpgradeModal
+      {/* Credit packs */}
+      <PacksModal
         open={upgradeReason !== null}
         onClose={closeUpgrade}
         reason={upgradeReason ?? ''}

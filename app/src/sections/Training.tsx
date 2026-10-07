@@ -15,9 +15,6 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import EnrollmentModal from '../components/EnrollmentModal';
-import WhatsAppShareButton from '../components/WhatsAppShareButton';
-import WhatsAppShareSheet from '../components/WhatsAppShareSheet';
-import { useShareItems } from '../hooks/use-share-items';
 
 const courses = [
   {
@@ -68,7 +65,7 @@ const courses = [
 
 export type Course = typeof courses[0];
 
-function CourseCard({ course, index, onEnroll, onShare }: { course: Course; index: number; onEnroll: () => void; onShare: () => void }) {
+function CourseCard({ course, index, onEnroll }: { course: Course; index: number; onEnroll: () => void }) {
   const [isHovered, setIsHovered] = useState(false);
   const { t } = useLanguage();
   const features = [1, 2, 3, 4].map((n) => t(`training.course.${course.id}.f${n}`));
@@ -152,11 +149,6 @@ function CourseCard({ course, index, onEnroll, onShare }: { course: Course; inde
               <ArrowRight aria-hidden="true" className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
             </button>
           </div>
-
-          {/* Share */}
-          <div className="mt-4">
-            <WhatsAppShareButton variant="outline" size="md" label={t('share.courseButton')} onClick={onShare} />
-          </div>
         </div>
       </div>
     </motion.div>
@@ -171,7 +163,6 @@ export default function Training() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const closeModal = useCallback(() => setIsModalOpen(false), []);
-  const share = useShareItems();
 
   const handleEnrollClick = (course: Course) => {
     setSelectedCourse(course);
@@ -207,13 +198,7 @@ export default function Training() {
           {/* Course Cards Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 lg:gap-6">
             {courses.map((course, index) => (
-              <CourseCard
-                key={course.id}
-                course={course}
-                index={index}
-                onEnroll={() => handleEnrollClick(course)}
-                onShare={() => share.shareCourse({ ...course, line: t(`training.course.${course.id}.desc`) })}
-              />
+              <CourseCard key={course.id} course={course} index={index} onEnroll={() => handleEnrollClick(course)} />
             ))}
           </div>
 
@@ -245,8 +230,6 @@ export default function Training() {
         onClose={closeModal}
         course={selectedCourse}
       />
-
-      <WhatsAppShareSheet item={share.item} onClose={share.close} />
     </section>
   );
 }

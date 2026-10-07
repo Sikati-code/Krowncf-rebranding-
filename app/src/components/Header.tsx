@@ -8,7 +8,8 @@ import {
   X,
   Phone,
   Mail,
-  ChevronDown
+  ChevronDown,
+  Coins
 } from 'lucide-react';
 import LoginModal from './LoginModal';
 import SearchModal from './SearchModal';
@@ -16,6 +17,7 @@ import Cart from './Cart';
 import LanguageToggle from './LanguageToggle';
 import { useCart } from '../contexts/CartContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useUser } from '../contexts/UserContext';
 
 const navLinks = [
   { key: 'nav.home', href: '/', isRoute: true },
@@ -29,6 +31,7 @@ const navLinks = [
 
 export default function Header() {
   const { t } = useLanguage();
+  const { user } = useUser();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -211,15 +214,26 @@ export default function Header() {
                 )}
               </motion.button>
 
-              {/* Login - Desktop */}
-              <motion.button
-                onClick={() => setIsLoginModalOpen(true)}
-                className="hidden sm:block px-4 sm:px-5 py-2 text-sm font-medium text-krown-black bg-white rounded-full hover:bg-krown-red hover:text-white transition-all duration-300"
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                Login
-              </motion.button>
+              {/* Login / Account - Desktop */}
+              {user.signedIn ? (
+                <Link
+                  to="/account"
+                  aria-label={t('account.linkAria').replace('{count}', String(user.credits))}
+                  className="hidden sm:inline-flex items-center gap-1.5 px-4 sm:px-5 py-2 text-sm font-medium text-krown-black bg-white rounded-full hover:bg-krown-red hover:text-white transition-all duration-300"
+                >
+                  <Coins className="w-4 h-4" aria-hidden="true" />
+                  {user.credits}
+                </Link>
+              ) : (
+                <motion.button
+                  onClick={() => setIsLoginModalOpen(true)}
+                  className="hidden sm:block px-4 sm:px-5 py-2 text-sm font-medium text-krown-black bg-white rounded-full hover:bg-krown-red hover:text-white transition-all duration-300"
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  Login
+                </motion.button>
+              )}
 
               {/* Mobile Menu Toggle */}
               <button
@@ -299,13 +313,31 @@ export default function Header() {
                 ))}
               </div>
 
-              <div className="mt-6 pt-6 border-t border-white/10">
-                <button
-                  onClick={() => setIsLoginModalOpen(true)}
-                  className="w-full py-3 text-sm font-medium text-krown-black bg-krown-red rounded-lg hover:bg-krown-red-dark transition-colors"
+              <div className="mt-6 pt-6 border-t border-white/10 space-y-2">
+                <Link
+                  to="/pricing"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center gap-2 px-4 py-3 text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition-all duration-200"
                 >
-                  Login
-                </button>
+                  <Coins className="w-4 h-4 text-krown-orange" aria-hidden="true" />
+                  {t('nav.pricing')}
+                </Link>
+                {user.signedIn ? (
+                  <Link
+                    to="/account"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="block w-full py-3 text-center text-sm font-medium text-krown-black bg-krown-red rounded-lg hover:bg-krown-red-dark transition-colors"
+                  >
+                    {t('account.linkAria').replace('{count}', String(user.credits))}
+                  </Link>
+                ) : (
+                  <button
+                    onClick={() => setIsLoginModalOpen(true)}
+                    className="w-full py-3 text-sm font-medium text-krown-black bg-krown-red rounded-lg hover:bg-krown-red-dark transition-colors"
+                  >
+                    Login
+                  </button>
+                )}
               </div>
             </motion.nav>
           </motion.div>
