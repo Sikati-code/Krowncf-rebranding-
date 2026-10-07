@@ -281,8 +281,9 @@ const translations = {
     // Podcasts
     'podcasts.title': 'Latest Podcasts',
     'podcasts.subtitle': 'Tune in to our podcast series featuring industry insights and creative discussions.',
-    'podcasts.showName': 'The KCF Podcast',
-    'podcasts.description': 'Join us as we dive deep into the world of graphic design, creativity, and building successful creative businesses in Africa. Featuring interviews with top designers, entrepreneurs, and industry leaders.',
+    'podcasts.showName': 'Kreativity=Intelligence+Fun',
+    'podcasts.description': 'Kreativity=Intelligence+Fun is a podcast that gives designers an avenue to learn and get access to knowledge that would naturally take them years of working experience to have. Tips, Advice, Guidance, and Historical views of Graphics Design.',
+    'podcasts.tagline': 'Kreativity=Intelligence+Fun',
     'podcasts.episodes': 'Episodes',
     'podcasts.listeners': 'Listeners',
     'podcasts.weekly': 'Weekly',
@@ -620,8 +621,9 @@ const translations = {
     // Podcasts
     'podcasts.title': 'Derniers Podcasts',
     'podcasts.subtitle': 'Écoutez notre série de podcasts présentant des informations sur l\'industrie et des discussions créatives.',
-    'podcasts.showName': 'Le Podcast KCF',
-    'podcasts.description': "Plongez avec nous dans l'univers du design graphique, de la créativité et de la création d'entreprises créatives prospères en Afrique. Avec des interviews de designers, d'entrepreneurs et de leaders du secteur.",
+    'podcasts.showName': 'Kreativity=Intelligence+Fun',
+    'podcasts.description': "Kreativity=Intelligence+Fun est un podcast qui offre aux designers une occasion d'apprendre et d'accéder à des connaissances qui leur prendraient naturellement des années d'expérience professionnelle. Astuces, Conseils, Orientations et Regards Historiques sur le Design Graphique.",
+    'podcasts.tagline': 'Kreativity=Intelligence+Fun',
     'podcasts.episodes': 'Épisodes',
     'podcasts.listeners': 'Auditeurs',
     'podcasts.weekly': 'Hebdo',

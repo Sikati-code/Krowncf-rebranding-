@@ -35,6 +35,17 @@ const podcastPlatforms = [
   },
 ].filter((platform) => platform.href);
 
+const PODCAST_NAME_PARTS = ['Kreativity=', 'Intelligence+', 'Fun'];
+
+/** The podcast name has no spaces: allow line breaks after "=" and "+" so it wraps on phones. */
+const breakable = (text: string) =>
+  text.split(/(?<=[=+])/).map((part, i) => (
+    <span key={i}>
+      {i > 0 && <wbr />}
+      {part}
+    </span>
+  ));
+
 export default function Podcasts() {
   const { t } = useLanguage();
   const ref = useRef(null);
@@ -118,7 +129,11 @@ export default function Podcasts() {
                     <div className="absolute inset-2 rounded-2xl bg-krown-black flex items-center justify-center">
                       <div className="text-center">
                         <Mic className="w-12 h-12 sm:w-16 sm:h-16 text-krown-orange mx-auto mb-2" />
-                        <div className="text-lg sm:text-xl font-bold text-white">KCF</div>
+                        <div className="text-sm sm:text-base font-bold text-white leading-tight">
+                          {PODCAST_NAME_PARTS.map((part) => (
+                            <span key={part} className="block">{part}</span>
+                          ))}
+                        </div>
                         <div className="text-[10px] sm:text-xs text-white/50 tracking-wider">PODCAST</div>
                       </div>
                     </div>
@@ -148,10 +163,13 @@ export default function Podcasts() {
                 <div className="lg:w-3/5 p-6 sm:p-8 lg:p-10 flex flex-col justify-center">
                   <div className="mb-6">
                     <h3 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-3">
-                      {t('podcasts.showName')}
+                      {breakable(t('podcasts.showName'))}
                     </h3>
                     <p className="text-sm sm:text-base text-white/50 leading-relaxed">
                       {t('podcasts.description')}
+                    </p>
+                    <p className="mt-4 text-sm sm:text-base text-white/70 italic font-medium">
+                      {t('podcasts.tagline')}
                     </p>
                   </div>
 
